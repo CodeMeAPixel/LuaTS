@@ -83,13 +83,16 @@
   "license": "MIT",
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/glob": "^8.1.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "glob": "^8.0.0"
+  },
   "files": [
     "dist",
     "README.md",

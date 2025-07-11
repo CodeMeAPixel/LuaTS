@@ -1,136 +1,137 @@
-import fs from 'fs';
-import path from 'path';
-import glob from 'glob';
-import { generateTypes } from '../index.js';
-import type { LuatsConfig } from './config.js';
-import { loadPlugins } from '../plugins/plugin-system.js';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as glob from 'glob';
+import { LuatsConfig } from './config';
 
-export interface ProcessorOptions {
-  pattern: string;
-  recursive: boolean;
-  silent: boolean;
-  verbose: boolean;
-  config: LuatsConfig;
+// Import your core modules
+import { Parser } from '../parsers/lua';
+import { TypeGenerator } from '../generators/typescript';
+
+// Interface for plugin context
+interface PluginContext {
+  typeGeneratorOptions?: any;
+  config?: LuatsConfig;
 }
 
 /**
- * Process all Lua/Luau files in a directory and convert them to TypeScript
+ * Process a single file
+ */
+export async function processFile(
+  inputPath: string,
+  outputPath: string,
+  config: LuatsConfig
+): Promise<void> {
+  try {
+    // Determine if file is Luau based on extension
+    const isLuau = inputPath.endsWith('.luau');
+    
+    // Read the input file
+    const luaCode = fs.readFileSync(inputPath, 'utf-8');
+    
+    // Generate TypeScript code
+    const tsCode = generateTypeScript(luaCode, isLuau, config);
+    
+    // Ensure output directory exists
+    const outputDir = path.dirname(outputPath);
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
+    // Write the output file
+    fs.writeFileSync(outputPath, tsCode, 'utf-8');
+    
+    if (config.verbose) {
+      console.log(`Processed: ${inputPath} -> ${outputPath}`);
+    }
+  } catch (error) {
+    console.error(`Error processing file ${inputPath}: ${(error as Error).message}`);
+    throw error;
+  }
+}
+
+/**
+ * Process a directory
  */
 export async function processDirectory(
-  inputDir: string, 
-  outputDir: string, 
-  options: ProcessorOptions
+  inputDir: string,
+  outputDir: string,
+  config: LuatsConfig
 ): Promise<void> {
-  const { pattern, recursive, silent, verbose, config } = options;
-  
-  // Load plugins
-  const plugins = await loadPlugins(config.plugins);
-  
-  if (verbose && !silent && plugins.length > 0) {
-    console.log(`Loaded ${plugins.length} plugins: ${plugins.map(p => p.name).join(', ')}`);
-  }
-  
-  // Find all matching files
-  const files = await findFiles(inputDir, pattern, recursive);
-  
-  if (verbose && !silent) {
-    console.log(`Found ${files.length} files to process`);
-  }
-  
-  let successCount = 0;
-  let errorCount = 0;
-  
-  // Process each file
-  for (const file of files) {
-    try {
-      const relativePath = path.relative(inputDir, file);
-      const outputPath = path.join(outputDir, path.dirname(relativePath), 
-        `${path.basename(relativePath, path.extname(relativePath))}.d.ts`);
+  try {
+    // Get all matching files
+    const files = glob.sync(config.include || ['**/*.{lua,luau}'], {
+      cwd: inputDir,
+      ignore: config.exclude || ['**/node_modules/**', '**/dist/**'],
+      absolute: false
+    });
+    
+    // Process each file
+    for (const file of files) {
+      const inputPath = path.join(inputDir, file);
+      const outputPath = path.join(
+        outputDir,
+        file.replace(/\.lua$|\.luau$/, '.ts')
+      );
       
-      // Ensure output directory exists
-      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-      
-      // Read input file
-      const luaCode = fs.readFileSync(file, 'utf-8');
-      
-      // Generate TypeScript with plugin support
-      const tsCode = await generateTypesWithPlugins(luaCode, config, plugins);
-      
-      // Write output file
-      fs.writeFileSync(outputPath, tsCode, 'utf-8');
-      
-      successCount++;
-      
-      if (verbose && !silent) {
-        console.log(`Converted ${file} -> ${outputPath}`);
-      }
-    } catch (error) {
-      errorCount++;
-      
-      if (!silent) {
-        console.error(`Error processing ${file}:`, error);
-      }
+      await processFile(inputPath, outputPath, config);
     }
-  }
-  
-  if (!silent) {
-    console.log(`Processed ${files.length} files: ${successCount} succeeded, ${errorCount} failed`);
+    
+    if (config.verbose) {
+      console.log(`Processed ${files.length} files from ${inputDir} to ${outputDir}`);
+    }
+  } catch (error) {
+    console.error(`Error processing directory ${inputDir}: ${(error as Error).message}`);
+    throw error;
   }
 }
 
 /**
- * Generate TypeScript with plugin support
+ * Generate TypeScript code from Lua code
  */
-async function generateTypesWithPlugins(luaCode: string, config: LuatsConfig, plugins: any[]): Promise<string> {
-  // If no plugins, use standard generation
-  if (plugins.length === 0) {
-    return generateTypes(luaCode, config.typeGeneratorOptions);
-  }
+function generateTypeScript(luaCode: string, isLuau: boolean, config: LuatsConfig): string {
+  // Initialize parser based on whether it's Luau or Lua
+  const parser = new Parser({
+    luaVersion: isLuau ? 'luau' : (config.parserOptions?.luaVersion || '5.1'),
+    locations: config.parserOptions?.locations,
+    comments: config.parserOptions?.comments,
+    scope: config.parserOptions?.scope
+  });
   
-  // Use the enhanced generation with plugins
-  const { TypeGenerator } = await import('../generators/typescript.js');
-  const { LuauParser } = await import('../parsers/luau.js');
-  const { applyPlugins } = await import('../plugins/plugin-system.js');
+  // Initialize type generator
+  const generator = new TypeGenerator(config.typeGeneratorOptions || {});
   
-  const parser = new LuauParser();
-  const generator = new TypeGenerator(config.typeGeneratorOptions);
-  
-  // Parse the code
+  // Parse the Lua code
   const ast = parser.parse(luaCode);
   
-  // Apply plugins
-  applyPlugins(generator, plugins, {
-    typeGeneratorOptions: config.typeGeneratorOptions,
-    config: config
-  });
+  // Apply plugins if configured
+  if (config.plugins && config.plugins.length > 0) {
+    applyPlugins(generator, config.plugins, {
+      typeGeneratorOptions: config.typeGeneratorOptions,
+      config: config
+    });
+  }
   
-  // Generate TypeScript
-  return generator.generateFromLuauAST(ast);
+  // Generate TypeScript code
+  return generator.generate(ast);
 }
 
 /**
- * Find all files matching a pattern in a directory
+ * Apply plugins to the generator
  */
-async function findFiles(directory: string, pattern: string, recursive: boolean): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    const options = {
-      cwd: directory,
-      absolute: true,
-      nodir: true,
-      dot: false,
-      // Only use recursive mode if explicitly requested
-      nocase: true
-    };
-    
-    // Add the depth option only when recursive is false
-    const finalOptions = recursive ? options : { ...options, depth: 0 };
-    
-    glob(pattern, finalOptions, (err: Error | null, matches: string[]) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(matches);
-      }
-    });
-  });
+function applyPlugins(
+  generator: TypeGenerator,
+  plugins: string[],
+  context: PluginContext
+): void {
+  // This is a placeholder for plugin implementation
+  // In a real implementation, you would load and apply each plugin
+  
+  for (const pluginName of plugins) {
+    try {
+      // Here you would load the plugin and apply it
+      console.log(`Applying plugin: ${pluginName}`);
+    } catch (error) {
+      console.error(`Error applying plugin ${pluginName}: ${(error as Error).message}`);
+    }
+  }
 }

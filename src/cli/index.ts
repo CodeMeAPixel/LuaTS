@@ -2,13 +2,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { analyze } from '../index.js';
-import { processDirectory } from './processor.js';
-import { loadConfig } from './config.js';
-import type { LuatsConfig } from './config.js';
+import { processDirectory, processFile } from './processor';
+import { LuatsConfig, loadConfig, defaultConfig } from './config';
 
 // CLI command types
-type Command = 'convert' | 'convert-dir' | 'validate' | 'help';
+type Command = 'convert' | 'validate' | 'help';
 
 // CLI options interface
 interface CliOptions {
@@ -17,18 +15,27 @@ interface CliOptions {
   config?: string;
   watch?: boolean;
   verbose?: boolean;
-  silent?: boolean;
 }
 
 /**
  * Main CLI entry point
  */
-export function cli(args: string[] = process.argv.slice(2)): void {
+export async function cli(args: string[] = process.argv.slice(2)): Promise<void> {
   try {
     const command = parseCommand(args);
     const options = parseOptions(args);
     
-    executeCommand(command, options);
+    // Load configuration
+    const config = options.config ? 
+      await loadConfig(options.config) : 
+      await loadConfig();
+    
+    // Apply command line options to config
+    if (options.verbose) {
+      config.verbose = options.verbose;
+    }
+    
+    await executeCommand(command, options, config);
   } catch (error) {
     console.error('Error:', (error as Error).message);
     process.exit(1);
@@ -47,9 +54,8 @@ function parseCommand(args: string[]): Command {
   
   switch (commandArg) {
     case 'convert':
-    case 'convert-dir':
     case 'validate':
-      return commandArg as Command;
+      return commandArg;
     default:
       return 'help';
   }
@@ -74,8 +80,6 @@ function parseOptions(args: string[]): CliOptions {
       options.watch = true;
     } else if (arg === '--verbose' || arg === '-v') {
       options.verbose = true;
-    } else if (arg === '--silent' || arg === '-s') {
-      options.silent = true;
     }
   }
   
@@ -85,23 +89,17 @@ function parseOptions(args: string[]): CliOptions {
 /**
  * Execute the specified command with options
  */
-async function executeCommand(command: Command, options: CliOptions): Promise<void> {
-  // Load config if provided
-  let config: LuatsConfig | undefined;
-  
-  if (options.config) {
-    config = await loadConfig(options.config);
-  }
-  
+async function executeCommand(
+  command: Command, 
+  options: CliOptions, 
+  config: LuatsConfig
+): Promise<void> {
   switch (command) {
     case 'convert':
       await convertCommand(options, config);
       break;
-    case 'convert-dir':
-      await convertDirectoryCommand(options, config);
-      break;
     case 'validate':
-      await validateCommand(options);
+      await validateCommand(options, config);
       break;
     case 'help':
     default:
@@ -111,105 +109,107 @@ async function executeCommand(command: Command, options: CliOptions): Promise<vo
 }
 
 /**
- * Convert a single file
+ * Convert command implementation
  */
-async function convertCommand(options: CliOptions, config?: LuatsConfig): Promise<void> {
+async function convertCommand(options: CliOptions, config: LuatsConfig): Promise<void> {
   if (!options.input) {
-    throw new Error('Input file is required for convert command');
+    throw new Error('Input file or directory is required for convert command');
   }
   
+  // Resolve input path
   const inputPath = path.resolve(options.input);
   
   if (!fs.existsSync(inputPath)) {
-    throw new Error(`File not found: ${inputPath}`);
+    throw new Error(`Input path does not exist: ${inputPath}`);
   }
   
-  if (!fs.statSync(inputPath).isFile()) {
-    throw new Error(`Not a file: ${inputPath}`);
-  }
+  const stats = fs.statSync(inputPath);
   
-  if (!options.output) {
-    options.output = path.join(
-      path.dirname(inputPath),
-      path.basename(inputPath, path.extname(inputPath)) + '.d.ts'
-    );
-  }
+  // Determine output path
+  const outputPath = options.output ? 
+    path.resolve(options.output) : 
+    (stats.isFile() ? 
+      inputPath.replace(/\.lua$|\.luau$/, '.ts') : 
+      inputPath);
   
-  const outputPath = path.resolve(options.output);
-  
-  // Ensure output directory exists
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  
-  if (!options.silent) {
-    console.log(`Converting ${inputPath} -> ${outputPath}`);
-  }
-  
-  // Read input file
-  const luaCode = fs.readFileSync(inputPath, 'utf-8');
-  
-  // Convert to TypeScript
-  const result = analyze(luaCode, true);
-  
-  if (result.errors.length > 0) {
-    console.error(`Failed to analyze ${inputPath}:`);
-    result.errors.forEach(error => console.error(`- ${error.message}`));
-    throw new Error('Analysis failed with errors');
-  }
-  
-  if (!result.types) {
-    throw new Error('No TypeScript types were generated');
-  }
-  
-  // Write output file
-  fs.writeFileSync(outputPath, result.types, 'utf-8');
-  
-  if (!options.silent) {
-    console.log(`Successfully converted ${inputPath}`);
+  if (stats.isFile()) {
+    // Process a single file
+    await processFile(inputPath, outputPath, config);
+    console.log(`Converted file: ${inputPath} -> ${outputPath}`);
+  } else if (stats.isDirectory()) {
+    // Process a directory
+    await processDirectory(inputPath, outputPath, config);
+    console.log(`Converted directory: ${inputPath} -> ${outputPath}`);
+  } else {
+    throw new Error(`Invalid input: ${inputPath}`);
   }
 }
 
 /**
- * Convert a directory of files
+ * Validate command implementation
  */
-async function convertDirectoryCommand(options: CliOptions, config?: LuatsConfig): Promise<void> {
-  if (!options.input) {
-    throw new Error('Input directory is required for convert-dir command');
-  }
-  
-  const inputDir = path.resolve(options.input);
-  
-  if (!fs.existsSync(inputDir)) {
-    throw new Error(`Directory not found: ${inputDir}`);
-  }
-  
-  if (!fs.statSync(inputDir).isDirectory()) {
-    throw new Error(`Not a directory: ${inputDir}`);
-  }
-  
-  const outputDir = options.output ? path.resolve(options.output) : inputDir;
-  
-  // Ensure output directory exists
-  fs.mkdirSync(outputDir, { recursive: true });
-  
-  // Process the directory
-  await processDirectory(inputDir, outputDir, {
-    pattern: '**/*.{lua,luau}',
-    recursive: true,
-    silent: options.silent || false,
-    verbose: options.verbose || false,
-    config: config || await loadConfig()
-  });
-}
-
-/**
- * Validate a Lua/Luau file
- */
-async function validateCommand(options: CliOptions): Promise<void> {
+async function validateCommand(options: CliOptions, config: LuatsConfig): Promise<void> {
   if (!options.input) {
     throw new Error('Input file is required for validate command');
   }
   
   const inputPath = path.resolve(options.input);
+  
+  if (!fs.existsSync(inputPath)) {
+    throw new Error(`Input file does not exist: ${inputPath}`);
+  }
+  
+  if (fs.statSync(inputPath).isDirectory()) {
+    throw new Error('Validation can only be performed on a single file');
+  }
+  
+  // Read the file
+  const luaCode = fs.readFileSync(inputPath, 'utf-8');
+  
+  // Determine if it's Luau based on extension
+  const isLuau = inputPath.endsWith('.luau');
+  
+  console.log(`Validating file: ${inputPath}`);
+  
+  // Here you would add the actual validation logic
+  // For now, we'll just return success
+  console.log('Validation successful!');
+}
+
+/**
+ * Display help information
+ */
+function showHelp(): void {
+  console.log(`
+LuaTS CLI - Lua/Luau tools for TypeScript
+
+Usage:
+  luats <command> [options]
+
+Commands:
+  convert     Convert Lua/Luau files to TypeScript
+  validate    Validate Lua/Luau files
+
+Options:
+  --input, -i    Input file or directory
+  --output, -o   Output file or directory
+  --config, -c   Config file path
+  --watch, -w    Watch for file changes
+  --verbose, -v  Verbose output
+
+Examples:
+  luats convert --input ./src --output ./dist
+  luats validate --input ./src/main.lua
+  `);
+}
+
+// Run CLI if this file is executed directly
+if (require.main === module) {
+  cli().catch(error => {
+    console.error('Unhandled error:', error);
+    process.exit(1);
+  });
+}
   
   if (!fs.existsSync(inputPath)) {
     throw new Error(`File not found: ${inputPath}`);

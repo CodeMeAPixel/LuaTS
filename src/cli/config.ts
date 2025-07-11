@@ -1,129 +1,157 @@
-import fs from 'fs';
-import path from 'path';
-import { TypeGeneratorOptions, defaultTypeGeneratorOptions } from '../generators/typescript.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
+/**
+ * LuaTS Configuration interface
+ */
 export interface LuatsConfig {
-  // TypeScript generator options
-  typeGeneratorOptions: TypeGeneratorOptions;
+  // Input/output configuration
+  input?: string;
+  output?: string;
   
-  // File patterns
-  include: string[];
-  exclude: string[];
+  // Processing options
+  include?: string[];
+  exclude?: string[];
   
-  // Output options
-  outDir: string | null;
-  preserveDirectoryStructure: boolean;
+  // Parser options
+  parserOptions?: {
+    luaVersion?: '5.1' | '5.2' | '5.3' | '5.4' | 'luau';
+    locations?: boolean;
+    comments?: boolean;
+    scope?: boolean;
+  };
   
-  // Plugin support
-  plugins: string[];
+  // Formatter options
+  formatterOptions?: {
+    indentSize?: number;
+    lineWidth?: number;
+    useTabs?: boolean;
+    newLineAtEnd?: boolean;
+  };
   
-  // Comment processing
-  preserveComments: boolean;
-  commentStyle: 'jsdoc' | 'inline' | 'both';
+  // Type generator options
+  typeGeneratorOptions?: {
+    moduleType?: 'esm' | 'commonjs';
+    inferTypes?: boolean;
+    strictNullChecks?: boolean;
+    robloxTypes?: boolean;
+  };
   
-  // Type inference options
-  inferTypes: boolean;
-  mergeInterfaces: boolean;
+  // Plugin configuration
+  plugins?: string[];
+  
+  // Logging options
+  verbose?: boolean;
 }
 
+/**
+ * Default configuration values
+ */
 export const defaultConfig: LuatsConfig = {
-  typeGeneratorOptions: defaultTypeGeneratorOptions,
   include: ['**/*.{lua,luau}'],
   exclude: ['**/node_modules/**', '**/dist/**'],
-  outDir: null, // Same as input if null
-  preserveDirectoryStructure: true,
+  
+  parserOptions: {
+    luaVersion: '5.1',
+    locations: true,
+    comments: true,
+    scope: true
+  },
+  
+  formatterOptions: {
+    indentSize: 2,
+    lineWidth: 80,
+    useTabs: false,
+    newLineAtEnd: true
+  },
+  
+  typeGeneratorOptions: {
+    moduleType: 'esm',
+    inferTypes: true,
+    strictNullChecks: true,
+    robloxTypes: false
+  },
+  
   plugins: [],
-  preserveComments: true,
-  commentStyle: 'jsdoc',
-  inferTypes: false,
-  mergeInterfaces: true
+  
+  verbose: false
 };
 
 /**
- * Load configuration from a file, with fallbacks
+ * Configuration file names to look for
+ */
+const CONFIG_FILE_NAMES = [
+  '.luatsrc',
+  '.luatsrc.json',
+  '.luatsrc.js',
+  'luats.config.js',
+  'luats.config.json'
+];
+
+/**
+ * Load configuration from file
  */
 export async function loadConfig(configPath?: string): Promise<LuatsConfig> {
-  // Try to find the config file
-  const filePath = configPath ? path.resolve(configPath) : findConfigFile();
-  
-  // Start with the default config
-  let config: LuatsConfig = { ...defaultConfig };
-  
-  // Load from file if found
-  if (filePath && fs.existsSync(filePath)) {
-    try {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const fileConfig = JSON.parse(fileContent);
-      
-      // Merge configs, ensuring defaults for any missing properties
-      config = mergeConfigs(config, fileConfig);
-      
-      console.log(`Loaded configuration from ${filePath}`);
-    } catch (error) {
-      console.warn(`Error loading config from ${filePath}:`, error);
-      console.warn('Using default configuration');
+  // If config path is specified, try to load it
+  if (configPath) {
+    if (!fs.existsSync(configPath)) {
+      throw new Error(`Config file not found: ${configPath}`);
     }
-  } else if (configPath) {
-    // Only warn if a specific path was provided but not found
-    console.warn(`Config file not found: ${configPath}`);
-    console.warn('Using default configuration');
+    return loadConfigFile(configPath);
   }
   
-  return config;
+  // Otherwise search for config files
+  for (const fileName of CONFIG_FILE_NAMES) {
+    const filePath = path.resolve(process.cwd(), fileName);
+    if (fs.existsSync(filePath)) {
+      return loadConfigFile(filePath);
+    }
+  }
+  
+  // Return default config if no config file found
+  return { ...defaultConfig };
 }
 
 /**
- * Find a configuration file in the current or parent directories
+ * Load and parse a configuration file
  */
-function findConfigFile(): string | null {
-  const configNames = ['luats.config.json', '.luatsrc.json', '.luatsrc'];
-  let currentDir = process.cwd();
+async function loadConfigFile(filePath: string): Promise<LuatsConfig> {
+  const ext = path.extname(filePath);
   
-  // Try to find config in current dir or any parent dir
-  while (true) {
-    for (const name of configNames) {
-      const configPath = path.join(currentDir, name);
-      if (fs.existsSync(configPath)) {
-        return configPath;
-      }
+  try {
+    if (ext === '.js') {
+      // For JS files, require the module
+      const config = require(filePath);
+      return mergeWithDefaultConfig(config);
+    } else {
+      // For JSON files, read and parse
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const config = JSON.parse(content);
+      return mergeWithDefaultConfig(config);
     }
-    
-    // Go up one directory
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      // We've reached the root
-      break;
-    }
-    currentDir = parentDir;
+  } catch (error) {
+    throw new Error(`Failed to load config file ${filePath}: ${(error as Error).message}`);
   }
-  
-  return null;
 }
 
 /**
- * Merge configurations, preserving defaults for missing properties
+ * Merge user config with default config
  */
-function mergeConfigs(baseConfig: LuatsConfig, userConfig: Partial<LuatsConfig>): LuatsConfig {
-  // Deep merge of the configs
-  const result: LuatsConfig = { ...baseConfig };
-  
-  // Handle top-level properties
-  Object.keys(userConfig).forEach(key => {
-    const typedKey = key as keyof LuatsConfig;
-    const userValue = userConfig[typedKey];
-    
-    // Special handling for objects that need deep merging
-    if (typedKey === 'typeGeneratorOptions' && userValue) {
-      result.typeGeneratorOptions = {
-        ...baseConfig.typeGeneratorOptions,
-        ...(userValue as Partial<TypeGeneratorOptions>)
-      };
-    } else if (userValue !== undefined) {
-      // For other properties, use the user value if defined
-      (result as any)[key] = userValue;
+function mergeWithDefaultConfig(userConfig: LuatsConfig): LuatsConfig {
+  return {
+    ...defaultConfig,
+    ...userConfig,
+    parserOptions: {
+      ...defaultConfig.parserOptions,
+      ...userConfig.parserOptions
+    },
+    formatterOptions: {
+      ...defaultConfig.formatterOptions,
+      ...userConfig.formatterOptions
+    },
+    typeGeneratorOptions: {
+      ...defaultConfig.typeGeneratorOptions,
+      ...userConfig.typeGeneratorOptions
     }
-  });
-  
-  return result;
-}
+  };
 }
