@@ -1,0 +1,59 @@
+# Development files
+src/
+test/
+examples/
+docs/
+.github/
+coverage/
+.vscode/
+.idea/
+.git/
+
+# Only include the logo in assets
+assets/
+!assets/logo.png
+
+# Configuration files (except those needed for package users)
+.eslintrc.js
+.prettierrc
+.gitignore
+.travis.yml
+tsconfig.json
+bunfig.toml
+Gemfile
+bun.lockb
+jest.config.js
+
+# Build artifacts
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+
+# Test files
+__tests__/
+__mocks__/
+*.test.ts
+*.spec.ts
+
+# Documentation files
+*.md
+!README.md
+!LICENSE
+!SECURITY.md
+!CHANGELOG.md
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# IDE configuration
+.editorconfig
+*.sublime-project
+*.sublime-workspace
+
+# Only include dist folder when publishing
+# Don't ignore these files
+!dist/
