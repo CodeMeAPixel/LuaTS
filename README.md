@@ -5,9 +5,9 @@
 <div align="center">
 
 [![npm version](https://img.shields.io/npm/v/luats.svg?style=flat-square)](https://www.npmjs.org/package/luats)
-[![build status](https://img.shields.io/github/actions/workflow/status/codemeapixel/luats/ci.yml?branch=main&style=flat-square)](https://github.com/codemeapixel/luats/actions)
+[![build status](https://img.shields.io/github/actions/workflow/status/codemeapixel/luats/ci.yml?branch=master&style=flat-square)](https://github.com/codemeapixel/luats/actions)
 [![npm downloads](https://img.shields.io/npm/dm/luats.svg?style=flat-square)](https://npm-stat.com/charts.html?package=luats)
-[![license](https://img.shields.io/npm/l/luats.svg?style=flat-square)](https://github.com/codemeapixel/luats/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/luats.svg?style=flat-square)](https://github.com/codemeapixel/luats/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
 
 </div>
