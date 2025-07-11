@@ -42,6 +42,7 @@ export interface LuatsConfig {
   
   // Logging options
   verbose?: boolean;
+  silent?: boolean;
 }
 
 /**
@@ -74,7 +75,8 @@ export const defaultConfig: LuatsConfig = {
   
   plugins: [],
   
-  verbose: false
+  verbose: false,
+  silent: false
 };
 
 /**

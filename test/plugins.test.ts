@@ -1,4 +1,4 @@
-import { test, expect, describe } from 'bun:test';
+import { test, expect, describe, beforeAll, afterAll } from 'bun:test';
 import { 
   generateTypesWithPlugins,
   type Plugin
@@ -78,7 +78,7 @@ describe('Plugin System', () => {
       expect(types).toContain('// Generated with TestPlugin');
     } catch (error) {
       // If plugin system isn't implemented yet, this may fail
-      console.warn('Plugin test skipped - plugin system not fully implemented:', error.message);
+      console.warn('Plugin test skipped - plugin system not fully implemented:', (error as Error).message);
     }
   });
   
@@ -122,11 +122,10 @@ describe('Plugin System', () => {
       
       // Use in-memory plugin if supported
       const types = await generateTypesWithPlugins(code, {}, [inlinePlugin]);
-      
       expect(types).toContain('createdAt: string');
     } catch (error) {
       // If this feature isn't implemented yet, this may fail
-      console.warn('Inline plugin test skipped - feature not implemented:', error.message);
+      console.warn('Inline plugin test skipped - feature not implemented:', (error as Error).message);
     }
   });
 });

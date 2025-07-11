@@ -11,6 +11,7 @@ export enum TokenType {
   // Keywords
   AND = 'AND',
   BREAK = 'BREAK',
+  CONTINUE = 'CONTINUE',
   DO = 'DO',
   ELSE = 'ELSE',
   ELSEIF = 'ELSEIF',
@@ -33,6 +34,8 @@ export enum TokenType {
   // Luau-specific keywords
   TYPE = 'TYPE',
   EXPORT = 'EXPORT',
+  TYPEOF = 'TYPEOF',
+  AS = 'AS',
 
   // Operators
   PLUS = 'PLUS',
@@ -76,6 +79,8 @@ export enum TokenType {
   NEWLINE = 'NEWLINE',
   WHITESPACE = 'WHITESPACE',
   COMMENT = 'COMMENT',
+  MULTILINE_COMMENT = 'MULTILINE_COMMENT',
+  DOTS = 'DOTS', // '...'
 }
 
 export interface Token {
@@ -96,6 +101,7 @@ export class Lexer {
   private keywords: Map<string, TokenType> = new Map([
     ['and', TokenType.AND],
     ['break', TokenType.BREAK],
+    ['continue', TokenType.CONTINUE],
     ['do', TokenType.DO],
     ['else', TokenType.ELSE],
     ['elseif', TokenType.ELSEIF],
@@ -118,6 +124,8 @@ export class Lexer {
     // Luau keywords
     ['type', TokenType.TYPE],
     ['export', TokenType.EXPORT],
+    ['typeof', TokenType.TYPEOF],
+    ['as', TokenType.AS],
   ]);
 
   constructor(input: string) {
@@ -129,7 +137,11 @@ export class Lexer {
     
     while (!this.isAtEnd()) {
       const token = this.nextToken();
-      if (token.type !== TokenType.WHITESPACE && token.type !== TokenType.COMMENT) {
+      if (
+        token.type !== TokenType.WHITESPACE &&
+        token.type !== TokenType.COMMENT &&
+        token.type !== TokenType.MULTILINE_COMMENT
+      ) {
         tokens.push(token);
       }
     }
@@ -140,7 +152,7 @@ export class Lexer {
 
   private nextToken(): Token {
     this.skipWhitespace();
-    
+
     if (this.isAtEnd()) {
       return this.createToken(TokenType.EOF, '');
     }
@@ -149,6 +161,10 @@ export class Lexer {
 
     // Comments
     if (char === '-' && this.peek() === '-') {
+      // Check for long comment
+      if (this.peek(1) === '[' && (this.peek(2) === '[' || this.peek(2) === '=')) {
+        return this.multilineComment();
+      }
       return this.comment();
     }
 
@@ -201,6 +217,13 @@ export class Lexer {
       return this.createToken(TokenType.DOUBLE_COLON, '::');
     }
 
+    // Vararg '...'
+    if (char === '.' && this.peek() === '.' && this.peek(1) === '.') {
+      this.advance();
+      this.advance();
+      return this.createToken(TokenType.DOTS, '...');
+    }
+
     // Single-character tokens
     switch (char) {
       case '+': return this.createToken(TokenType.PLUS, char);
@@ -238,29 +261,27 @@ export class Lexer {
   private comment(): Token {
     // Skip the second '-'
     this.advance();
-    
-    // Check for long comment
-    if (this.peek() === '[') {
-      this.advance();
-      const level = this.getLongStringLevel();
-      if (level >= 0) {
-        return this.longComment(level);
-      }
-    }
-    
-    // Single line comment
     const start = this.position - 2;
     while (!this.isAtEnd() && this.peek() !== '\n') {
       this.advance();
     }
-    
     return this.createToken(TokenType.COMMENT, this.input.slice(start, this.position));
   }
 
-  private longComment(level: number): Token {
-    const start = this.position - 2 - level;
+  private multilineComment(): Token {
+    // Skip the second '-' and the opening '['
+    this.advance(); // skip '-'
+    this.advance(); // skip '['
+    let level = 0;
+    while (this.peek() === '=') {
+      this.advance();
+      level++;
+    }
+    if (this.peek() === '[') {
+      this.advance();
+    }
+    const start = this.position - 4 - level; // --[[ or --[=[ etc.
     const endPattern = ']' + '='.repeat(level) + ']';
-    
     while (!this.isAtEnd()) {
       if (this.input.slice(this.position, this.position + endPattern.length) === endPattern) {
         this.position += endPattern.length;
@@ -271,8 +292,7 @@ export class Lexer {
         this.column = 1;
       }
     }
-    
-    return this.createToken(TokenType.COMMENT, this.input.slice(start, this.position));
+    return this.createToken(TokenType.MULTILINE_COMMENT, this.input.slice(start, this.position));
   }
 
   private number(): Token {
@@ -419,9 +439,9 @@ export class Lexer {
     return char;
   }
 
-  private peek(): string {
-    if (this.isAtEnd()) return '\0';
-    return this.input[this.position];
+  private peek(offset = 0): string {
+    if (this.position + offset >= this.input.length) return '\0';
+    return this.input[this.position + offset];
   }
 
   private peekNext(): string {

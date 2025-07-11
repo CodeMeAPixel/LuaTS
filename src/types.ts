@@ -1,7 +1,7 @@
 // Core AST Node Types
 export interface ASTNode {
   type: string;
-  location?: SourceLocation;
+  location?: SourceLocation | undefined;
 }
 
 export interface SourceLocation {

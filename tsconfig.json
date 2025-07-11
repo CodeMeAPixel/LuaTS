@@ -18,7 +18,6 @@
     "emitDecoratorMetadata": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmitOnError": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,

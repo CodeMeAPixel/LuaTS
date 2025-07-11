@@ -1,7 +1,7 @@
 import { parseLuau, generateTypes, generateTypesWithPlugins } from '../src/index';
 import ReadonlyPlugin from './readonly-plugin';
 import { loadPlugins, applyPlugins } from '../src/plugins/plugin-system';
-import { TypeGenerator } from '../src/generators/typescript';
+import { TypeGenerator } from '../src/generators';
 
 // Example Luau code with type definitions
 const luauCode = `
@@ -33,8 +33,7 @@ type GameEvent = {
 async function runDemo() {
   console.log('=== Parsing Luau Code ===');
   try {
-    const parser = new parseLuau();
-    const ast = parser.parse(luauCode);
+    const ast = parseLuau(luauCode);
     console.log('✅ Successfully parsed AST');
     console.log(`Found ${ast.body.length} top-level statements`);
   } catch (error) {
@@ -56,13 +55,12 @@ async function runDemo() {
     const typesWithPlugin = await generateTypesWithPlugins(
       luauCode,
       { useUnknown: true },
-      ['./examples/readonly-plugin.js'] // This would work if the plugin is compiled to JS
+      ['./examples/readonly-plugin.js']
     );
     
     // Method 2: Manual plugin application (for demonstration)
-    const parser = new parseLuau();
+    const ast = parseLuau(luauCode);
     const generator = new TypeGenerator({ generateComments: true });
-    const ast = parser.parse(luauCode);
     
     // Apply the plugin directly
     applyPlugins(generator, [ReadonlyPlugin], {
@@ -70,7 +68,7 @@ async function runDemo() {
       config: { preserveComments: true, commentStyle: 'jsdoc' }
     });
     
-    const typesWithManualPlugin = generator.generateFromLuauAST(ast);
+    const typesWithManualPlugin = generator.generateTypeScript(ast);
     
     console.log('✅ Generated TypeScript interfaces with readonly plugin:');
     console.log(typesWithManualPlugin);

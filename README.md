@@ -31,6 +31,9 @@
 
 LuaTS bridges the gap between Lua/Luau and TypeScript ecosystems, allowing developers to leverage type safety while working with Lua codebases. Whether you're developing Roblox games, working with embedded Lua, or maintaining legacy Lua code, LuaTS helps you generate accurate TypeScript definitions for better IDE support, type checking, and developer experience.
 
+> [!CAUTION]
+> This lib is still a work in progress, as such you WILL NOT find it on NPM yet!
+
 ## ✨ Features
 
 - 🔁 **Converts Lua/Luau type declarations into TypeScript interfaces**
@@ -113,6 +116,43 @@ Visit **[luats.codemeapixel.dev](https://luats.codemeapixel.dev)** for comprehen
 - [Plugin System](https://luats.codemeapixel.dev/plugins)
 - [Examples](https://luats.codemeapixel.dev/examples)
 - [Contributing Guide](https://luats.codemeapixel.dev/contributing)
+
+## 🛠 CLI Usage
+
+The CLI supports converting files and directories:
+
+```bash
+npx luats convert src/file.lua -o src/file.d.ts
+npx luats dir src/lua -o src/types
+```
+
+### CLI Options
+
+| Option         | Alias | Description                       |
+| -------------- | ----- | --------------------------------- |
+| --input        | -i    | Input file or directory           |
+| --output       | -o    | Output file or directory          |
+| --config       | -c    | Path to config file               |
+| --silent       | -s    | Suppress output messages          |
+| --verbose      | -v    | Verbose output                    |
+| --watch        | -w    | Watch for file changes            |
+
+### Configuration File
+
+You can use a `luats.config.json` or `.luatsrc.json` file to specify options:
+
+```json
+{
+  "outDir": "./types",
+  "include": ["**/*.lua", "**/*.luau"],
+  "exclude": ["**/node_modules/**", "**/dist/**"],
+  "plugins": [],
+  "typeGeneratorOptions": {
+    "exportTypes": true,
+    "generateComments": true
+  }
+}
+```
 
 ## 🤝 Contributing
 

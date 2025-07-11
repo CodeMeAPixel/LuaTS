@@ -35,7 +35,8 @@ export class LuaParser {
     this.current = 0;
 
     const statements: AST.Statement[] = [];
-    
+    let safetyCounter = 0; // Prevent infinite loops
+
     while (!this.isAtEnd()) {
       if (this.match(TokenType.NEWLINE)) {
         continue;
@@ -43,6 +44,13 @@ export class LuaParser {
       const stmt = this.statement();
       if (stmt) {
         statements.push(stmt);
+      } else {
+        // Prevent infinite loop: advance if statement() returned null
+        this.advance();
+      }
+      safetyCounter++;
+      if (safetyCounter > 10000) {
+        throw new Error('Parser safety break: too many iterations (possible infinite loop)');
       }
     }
 

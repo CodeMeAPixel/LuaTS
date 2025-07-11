@@ -2,17 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';
 import { LuatsConfig } from './config';
-
-// Import core modules
-import { LuaParser } from '../parsers/lua';
-import { LuauParser } from '../parsers/luau';
-import { TypeGenerator } from '../generators/typescript';
-
-// Interface for plugin context
-interface PluginContext {
-  typeGeneratorOptions?: any;
-  config?: LuatsConfig;
-}
+import { generateTypes } from '../index';
 
 /**
  * Process a single file
@@ -23,14 +13,11 @@ export async function processFile(
   config: LuatsConfig
 ): Promise<void> {
   try {
-    // Determine if file is Luau based on extension
-    const isLuau = inputPath.endsWith('.luau');
-    
     // Read the input file
     const luaCode = fs.readFileSync(inputPath, 'utf-8');
     
     // Generate TypeScript code
-    const tsCode = generateTypeScript(luaCode, isLuau, config);
+    const tsCode = await generateTypeScript(luaCode, config);
     
     // Ensure output directory exists
     const outputDir = path.dirname(outputPath);
@@ -60,8 +47,7 @@ export async function processDirectory(
 ): Promise<void> {
   try {
     // Get all matching files
-    const includePatterns = config.include || ['**/*.{lua,luau}'];
-    const files = glob.sync(includePatterns.length === 1 ? includePatterns[0] : includePatterns, {
+    const files = glob.sync(config.include?.[0] || '**/*.{lua,luau}', {
       cwd: inputDir,
       ignore: config.exclude || ['**/node_modules/**', '**/dist/**'],
       absolute: false
@@ -88,51 +74,12 @@ export async function processDirectory(
 }
 
 /**
- * Generate TypeScript code from Lua code
+ * Generate TypeScript code from Lua code, applying plugins if configured
  */
-function generateTypeScript(luaCode: string, isLuau: boolean, config: LuatsConfig): string {
-  // Initialize parser based on whether it's Luau or Lua
-  const parser = isLuau 
-    ? new LuauParser() 
-    : new LuaParser();
-  
-  // Initialize type generator
-  const generator = new TypeGenerator(config.typeGeneratorOptions || {});
-  
-  // Parse the Lua code
-  const ast = parser.parse(luaCode);
-  
-  // Apply plugins if configured
-  if (config.plugins && config.plugins.length > 0) {
-    applyPlugins(generator, config.plugins, {
-      typeGeneratorOptions: config.typeGeneratorOptions,
-      config: config
-    });
-  }
-  
-  // Generate TypeScript code
-  return isLuau 
-    ? generator.generateFromLuauAST(ast) 
-    : generator.generateFromLuaAST(ast);
-}
-
-/**
- * Apply plugins to the generator
- */
-function applyPlugins(
-  generator: TypeGenerator,
-  plugins: string[],
-  context: PluginContext
-): void {
-  // This is a placeholder for plugin implementation
-  // In a real implementation, you would load and apply each plugin
-  
-  for (const pluginName of plugins) {
-    try {
-      // Here you would load the plugin and apply it
-      console.log(`Applying plugin: ${pluginName}`);
-    } catch (error) {
-      console.error(`Error applying plugin ${pluginName}: ${(error as Error).message}`);
-    }
-  }
+async function generateTypeScript(
+  luaCode: string, 
+  config: LuatsConfig
+): Promise<string> {
+  // Use the real generator
+  return generateTypes(luaCode, config.typeGeneratorOptions || {});
 }

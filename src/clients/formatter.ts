@@ -31,21 +31,34 @@ export class LuaFormatter {
     this.options = { ...defaultFormatterOptions, ...options };
   }
 
-  public format(node: AST.Program): string {
+  public format(node: AST.Program | string): string {
     this.output = [];
     this.indentLevel = 0;
-    this.visitProgram(node);
-    
+    let ast: AST.Program;
+    if (typeof node === 'string') {
+      // Try to parse as Lua
+      try {
+        const { LuaParser } = require('../parsers/lua');
+        ast = new LuaParser().parse(node);
+      } catch {
+        return '';
+      }
+    } else {
+      ast = node;
+    }
+    if (!ast || !Array.isArray(ast.body)) return '';
+    this.visitProgram(ast);
+
     let result = this.output.join('');
-    
+
     if (this.options.trimTrailingWhitespace) {
       result = result.replace(/[ \t]+$/gm, '');
     }
-    
+
     if (this.options.insertFinalNewline && !result.endsWith('\n')) {
       result += '\n';
     }
-    
+
     return result;
   }
 
