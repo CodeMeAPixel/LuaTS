@@ -3,7 +3,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { processDirectory, processFile } from './processor';
-import { LuatsConfig, loadConfig, defaultConfig } from './config';
+import { LuatsConfig, loadConfig } from './config';
+import { analyze } from '../index';
 
 // CLI command types
 type Command = 'convert' | 'validate' | 'help';
@@ -15,6 +16,7 @@ interface CliOptions {
   config?: string;
   watch?: boolean;
   verbose?: boolean;
+  silent?: boolean;
 }
 
 /**
@@ -80,6 +82,8 @@ function parseOptions(args: string[]): CliOptions {
       options.watch = true;
     } else if (arg === '--verbose' || arg === '-v') {
       options.verbose = true;
+    } else if (arg === '--silent' || arg === '-s') {
+      options.silent = true;
     }
   }
   
@@ -135,11 +139,15 @@ async function convertCommand(options: CliOptions, config: LuatsConfig): Promise
   if (stats.isFile()) {
     // Process a single file
     await processFile(inputPath, outputPath, config);
-    console.log(`Converted file: ${inputPath} -> ${outputPath}`);
+    if (!options.silent) {
+      console.log(`Converted file: ${inputPath} -> ${outputPath}`);
+    }
   } else if (stats.isDirectory()) {
     // Process a directory
     await processDirectory(inputPath, outputPath, config);
-    console.log(`Converted directory: ${inputPath} -> ${outputPath}`);
+    if (!options.silent) {
+      console.log(`Converted directory: ${inputPath} -> ${outputPath}`);
+    }
   } else {
     throw new Error(`Invalid input: ${inputPath}`);
   }
@@ -154,62 +162,6 @@ async function validateCommand(options: CliOptions, config: LuatsConfig): Promis
   }
   
   const inputPath = path.resolve(options.input);
-  
-  if (!fs.existsSync(inputPath)) {
-    throw new Error(`Input file does not exist: ${inputPath}`);
-  }
-  
-  if (fs.statSync(inputPath).isDirectory()) {
-    throw new Error('Validation can only be performed on a single file');
-  }
-  
-  // Read the file
-  const luaCode = fs.readFileSync(inputPath, 'utf-8');
-  
-  // Determine if it's Luau based on extension
-  const isLuau = inputPath.endsWith('.luau');
-  
-  console.log(`Validating file: ${inputPath}`);
-  
-  // Here you would add the actual validation logic
-  // For now, we'll just return success
-  console.log('Validation successful!');
-}
-
-/**
- * Display help information
- */
-function showHelp(): void {
-  console.log(`
-LuaTS CLI - Lua/Luau tools for TypeScript
-
-Usage:
-  luats <command> [options]
-
-Commands:
-  convert     Convert Lua/Luau files to TypeScript
-  validate    Validate Lua/Luau files
-
-Options:
-  --input, -i    Input file or directory
-  --output, -o   Output file or directory
-  --config, -c   Config file path
-  --watch, -w    Watch for file changes
-  --verbose, -v  Verbose output
-
-Examples:
-  luats convert --input ./src --output ./dist
-  luats validate --input ./src/main.lua
-  `);
-}
-
-// Run CLI if this file is executed directly
-if (require.main === module) {
-  cli().catch(error => {
-    console.error('Unhandled error:', error);
-    process.exit(1);
-  });
-}
   
   if (!fs.existsSync(inputPath)) {
     throw new Error(`File not found: ${inputPath}`);
@@ -237,6 +189,54 @@ if (require.main === module) {
       console.log(`✓ ${inputPath} is valid`);
     }
   } else {
+    console.error(`✗ ${inputPath} has ${result.errors.length} error(s)`);
+    
+    if (options.verbose || !options.silent) {
+      result.errors.forEach((error: Error, index: number) => {
+        console.error(`Error ${index + 1}: ${error.message}`);
+      });
+    }
+    
+    throw new Error('Validation failed');
+  }
+}
+
+/**
+ * Display help information
+ */
+function showHelp(): void {
+  console.log(`
+LuaTS CLI - Lua/Luau tools for TypeScript
+
+Usage:
+  luats <command> [options]
+
+Commands:
+  convert       Convert a Lua/Luau file or directory to TypeScript
+  validate      Validate a Lua/Luau file
+
+Options:
+  --input, -i    Input file or directory
+  --output, -o   Output file or directory
+  --config, -c   Config file path
+  --watch, -w    Watch for file changes
+  --verbose, -v  Verbose output
+  --silent, -s   Suppress output messages
+
+Examples:
+  luats convert --input ./src/types.lua --output ./dist/types.d.ts
+  luats convert --input ./src --output ./dist
+  luats validate --input ./src/main.lua
+  `);
+}
+
+// Run CLI if this file is executed directly
+if (require.main === module) {
+  cli().catch(error => {
+    console.error('Unhandled error:', error);
+    process.exit(1);
+  });
+}
     console.error(`✗ ${inputPath} has ${result.errors.length} error(s)`);
     
     if (options.verbose || !options.silent) {

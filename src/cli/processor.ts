@@ -3,8 +3,9 @@ import * as path from 'path';
 import * as glob from 'glob';
 import { LuatsConfig } from './config';
 
-// Import your core modules
-import { Parser } from '../parsers/lua';
+// Import core modules
+import { LuaParser } from '../parsers/lua';
+import { LuauParser } from '../parsers/luau';
 import { TypeGenerator } from '../generators/typescript';
 
 // Interface for plugin context
@@ -59,7 +60,8 @@ export async function processDirectory(
 ): Promise<void> {
   try {
     // Get all matching files
-    const files = glob.sync(config.include || ['**/*.{lua,luau}'], {
+    const includePatterns = config.include || ['**/*.{lua,luau}'];
+    const files = glob.sync(includePatterns.length === 1 ? includePatterns[0] : includePatterns, {
       cwd: inputDir,
       ignore: config.exclude || ['**/node_modules/**', '**/dist/**'],
       absolute: false
@@ -90,12 +92,9 @@ export async function processDirectory(
  */
 function generateTypeScript(luaCode: string, isLuau: boolean, config: LuatsConfig): string {
   // Initialize parser based on whether it's Luau or Lua
-  const parser = new Parser({
-    luaVersion: isLuau ? 'luau' : (config.parserOptions?.luaVersion || '5.1'),
-    locations: config.parserOptions?.locations,
-    comments: config.parserOptions?.comments,
-    scope: config.parserOptions?.scope
-  });
+  const parser = isLuau 
+    ? new LuauParser() 
+    : new LuaParser();
   
   // Initialize type generator
   const generator = new TypeGenerator(config.typeGeneratorOptions || {});
@@ -112,7 +111,9 @@ function generateTypeScript(luaCode: string, isLuau: boolean, config: LuatsConfi
   }
   
   // Generate TypeScript code
-  return generator.generate(ast);
+  return isLuau 
+    ? generator.generateFromLuauAST(ast) 
+    : generator.generateFromLuaAST(ast);
 }
 
 /**

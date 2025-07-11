@@ -1,78 +1,78 @@
-import * as AST from '../types.js';
+import * as AST from '../types';
 
-export interface TypeScriptInterface {
-  name: string;
-  properties: TypeScriptProperty[];
-  extends?: string[];
-  generics?: string[];
+export interface TypeGeneratorOptions {
+  moduleType?: 'esm' | 'commonjs';
+  inferTypes?: boolean;
+  strictNullChecks?: boolean;
+  robloxTypes?: boolean;
+  preserveComments?: boolean;
+  commentStyle?: 'jsdoc' | 'tsdoc' | 'inline';
 }
 
 export interface TypeScriptProperty {
   name: string;
   type: string;
   optional: boolean;
-  readonly?: boolean;
+  description?: string;
 }
 
-export interface TypeGeneratorOptions {
-  useUnknown: boolean; // Use 'unknown' instead of 'any'
-  exportTypes: boolean; // Export generated interfaces
-  useReadonly: boolean; // Mark properties as readonly when possible
-  generateComments: boolean; // Generate JSDoc comments
-  arrayType: 'array' | 'record' | 'auto'; // How to convert table array types
-  preserveTableIndexSignatures: boolean; // Preserve Lua table index signatures in TS
-  functionStyle: 'arrow' | 'method' | 'interface'; // How to represent function types
-  mergeInterfaces: boolean; // Merge interfaces with the same name
-  useNamespaces: boolean; // Use TS namespaces for organization
-  inferTypes: boolean; // Infer types for inline tables
-  indentSpaces: number; // Number of spaces for indentation
-  singleQuote: boolean; // Use single quotes instead of double quotes
-  trailingComma: boolean; // Include trailing commas in object types
-  extractEnums: boolean; // Extract string union types to enum declarations
-  preserveOptionalTypes: boolean; // Keep optional types (foo?: string vs foo: string | undefined)
+export interface TypeScriptInterface {
+  name: string;
+  properties: TypeScriptProperty[];
+  extends?: string[];
+  description?: string;
 }
 
 export const defaultTypeGeneratorOptions: TypeGeneratorOptions = {
-  useUnknown: false,
-  exportTypes: true,
-  useReadonly: false,
-  generateComments: true,
-  arrayType: 'auto',
-  preserveTableIndexSignatures: true,
-  functionStyle: 'arrow',
-  mergeInterfaces: true,
-  useNamespaces: false,
-  inferTypes: false,
-  indentSpaces: 2,
-  singleQuote: false,
-  trailingComma: false,
-  extractEnums: true,
-  preserveOptionalTypes: true
+  moduleType: 'esm',
+  inferTypes: true,
+  strictNullChecks: true,
+  robloxTypes: false,
+  preserveComments: true,
+  commentStyle: 'jsdoc'
 };
 
 export class TypeGenerator {
   private options: TypeGeneratorOptions;
-  private interfaces: Map<string, TypeScriptInterface> = new Map();
 
   constructor(options: Partial<TypeGeneratorOptions> = {}) {
     this.options = { ...defaultTypeGeneratorOptions, ...options };
   }
 
-  public generateFromLuauAST(ast: AST.Program): string {
-    this.interfaces.clear();
-    
-    // Extract comments if available and associate with declarations
-    this.extractComments(ast);
-    
-    for (const statement of ast.body) {
-      if (statement.type === 'TypeAlias') {
-        this.processTypeAlias(statement);
-      }
-    }
-    
-    return this.generateTypeScriptCode();
+  /**
+   * Generate TypeScript code from a Lua AST
+   */
+  public generateFromLuaAST(ast: AST.Program): string {
+    // Placeholder implementation
+    return `// TypeScript code generated from Lua AST
+// Options: ${JSON.stringify(this.options)}
+
+/**
+ * This is a placeholder implementation
+ */
+export interface LuaModule {
+  // Add your generated types here
+}
+`;
   }
 
+  /**
+   * Generate TypeScript code from a Luau AST
+   */
+  public generateFromLuauAST(ast: AST.Program): string {
+    // Placeholder implementation
+    return `// TypeScript code generated from Luau AST
+// Options: ${JSON.stringify(this.options)}
+
+/**
+ * This is a placeholder implementation
+ */
+export interface LuauModule {
+  // Add your generated types here
+}
+`;
+  }
+}
   public generateFromTableType(tableName: string, tableType: AST.TableType): TypeScriptInterface {
     const properties: TypeScriptProperty[] = [];
     
