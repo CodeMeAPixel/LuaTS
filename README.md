@@ -5,7 +5,7 @@
 <div align="center">
 
 [![npm version](https://img.shields.io/npm/v/luats.svg?style=flat-square)](https://www.npmjs.org/package/luats)
-[![build status](https://img.shields.io/github/actions/workflow/status/codemeapixel/luats/ci.yml?branch=master&style=flat-square)](https://github.com/codemeapixel/luats/actions)
+[![build status](https://img.shields.io/github/actions/workflow/status/codemeapixel/luats/test-build.yml?branch=master&style=flat-square)](https://github.com/codemeapixel/luats/actions)
 [![npm downloads](https://img.shields.io/npm/dm/luats.svg?style=flat-square)](https://npm-stat.com/charts.html?package=luats)
 [![license](https://img.shields.io/npm/l/luats.svg?style=flat-square)](https://github.com/codemeapixel/luats/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
@@ -15,10 +15,10 @@
 <p align="center">
   <b>A TypeScript library for parsing, formatting, and providing type interfaces for Lua and Luau code.</b>
   <br>
-  <a href="https://luats.codemeapixel.dev"><strong>Explore the docs »</strong></a>
+  <a href="https://luats.lol"><strong>Explore the docs »</strong></a>
   <br>
   <br>
-  <a href="https://luats.codemeapixel.dev/examples">View Examples</a>
+  <a href="https://luats.lol/examples">View Examples</a>
   ·
   <a href="https://github.com/codemeapixel/luats/issues/new?labels=bug&template=bug_report.md">Report Bug</a>
   ·
@@ -104,18 +104,18 @@ console.log(tsCode);
 - **API Type Definitions**: Generate TypeScript types for Lua APIs
 - **Development Tools**: Build better tooling for Lua/TypeScript interoperability
 
-📚 **[Read the full documentation](https://luats.codemeapixel.dev)** for comprehensive guides, API reference, and examples.
+📚 **[Read the full documentation](https://luats.lol)** for comprehensive guides, API reference, and examples.
 
 ## 📖 Documentation
 
-Visit **[luats.codemeapixel.dev](https://luats.codemeapixel.dev)** for comprehensive documentation including:
+Visit **[luats.lol](https://luats.lol)** for comprehensive documentation including:
 
-- [Getting Started Guide](https://luats.codemeapixel.dev/getting-started)
-- [API Reference](https://luats.codemeapixel.dev/api-reference)
-- [CLI Usage](https://luats.codemeapixel.dev/cli)
-- [Plugin System](https://luats.codemeapixel.dev/plugins)
-- [Examples](https://luats.codemeapixel.dev/examples)
-- [Contributing Guide](https://luats.codemeapixel.dev/contributing)
+- [Getting Started Guide](https://luats.lol/getting-started)
+- [API Reference](https://luats.lol/api-reference)
+- [CLI Usage](https://luats.lol/cli)
+- [Plugin System](https://luats.lol/plugins)
+- [Examples](https://luats.lol/examples)
+- [Contributing Guide](https://luats.lol/contributing)
 
 ## 🛠 CLI Usage
 
@@ -164,7 +164,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-See the [Contributing Guide](https://luats.codemeapixel.dev/contributing) for more information.
+See the [Contributing Guide](https://luats.lol/contributing) for more information.
 
 ## 📄 License
 
