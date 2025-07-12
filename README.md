@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/logo.png" alt="LuaTS Logo" width="300" />
+  <img src="docs/assets/logo.png" alt="LuaTS Logo" width="300" />
 </div>
 
 <div align="center">
