@@ -26,13 +26,7 @@ type Physics = {
   applyForce: (self: Physics, force: Vector3) -> ()
 }
 
--- Specialized entity types
-type Player = Entity & {
-  health: number,
-  inventory: {Item},
-  equipped?: Item
-}
-
+-- Item type
 type Item = {
   id: string,
   name: string,
@@ -41,9 +35,15 @@ type Item = {
   [string]: any -- Additional properties
 }
 
+-- Specialized entity type
+type Player = Entity & {
+  health: number,
+  inventory: {Item},
+  equipped?: Item
+}
+
+-- Game events
 type GameEvent =
   { type: "PlayerSpawn", player: Player } |
   { type: "PlayerDeath", player: Player, cause: string } |
   { type: "ItemPickup", player: Player, item: Item }
-  { type: "ItemPickup", player: Player, item: Item }
-    

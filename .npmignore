@@ -7,6 +7,7 @@ docs/
 .github/
 coverage/
 test/
+.todo/
 .vscode/
 .idea/
 .git/

@@ -2,8 +2,8 @@ import { TypeGeneratorOptions } from './types';
 
 export class TypeGenerator {
   private options: TypeGeneratorOptions;
-  private interfaces = new Map<string, any>();
-  private types = new Map<string, any>();
+  protected interfaces = new Map<string, any>();
+  protected types = new Map<string, any>();
 
   constructor(options: TypeGeneratorOptions = {}) {
     this.options = {
@@ -47,7 +47,7 @@ export class TypeGenerator {
     }
   }
 
-  private convertType(type: any): string {
+  protected convertType(type: any): string {
     if (!type) return this.options.useUnknown ? 'unknown' : 'any';
     
     switch (type.type) {
@@ -65,24 +65,31 @@ export class TypeGenerator {
         return `${this.convertType(type.elementType)}[]`;
       case 'UnionType':
         return type.types.map((t: any) => this.convertType(t)).join(' | ');
+      case 'IntersectionType':
+        return type.types.map((t: any) => {
+          const converted = this.convertType(t);
+          // Wrap union types in parentheses when they're part of an intersection
+          if (t.type === 'UnionType') {
+            return `(${converted})`;
+          }
+          return converted;
+        }).join(' & ');
       case 'FunctionType':
-        // Filter out 'self' parameter for method types
-        const params = type.parameters?.filter((p: any) => p.name.name !== 'self')
-          .map((p: any) => 
-            `${p.name.name}: ${this.convertType(p.typeAnnotation?.typeAnnotation)}`
-          ).join(', ') || '';
+        const params = type.parameters?.map((p: any) => 
+          `${p.name.name}: ${this.convertType(p.typeAnnotation?.typeAnnotation)}`
+        ).join(', ') || '';
         const returnType = this.convertType(type.returnType);
         return `(${params}) => ${returnType}`;
       case 'GenericType':
-        // Handle string literals (keep quotes) and type references
+        // FIXED: Handle string literals properly
         if (type.name.startsWith('"') && type.name.endsWith('"')) {
-          return type.name; // Keep string literals as-is
+          return type.name; // Return string literals as-is: "GET", "POST", etc.
         }
         if (type.name === 'string' || type.name === 'number' || type.name === 'boolean') {
           return type.name;
         }
-        // For other identifiers, return as-is (these are type references)
         return type.name;
+        
       case 'TableType':
         if (type.properties?.length === 1 && type.properties[0].type === 'IndexSignature') {
           const prop = type.properties[0];
@@ -104,7 +111,7 @@ export class TypeGenerator {
     }
   }
 
-  private processTypeAlias(typeAlias: any): void {
+  protected processTypeAlias(typeAlias: any): void {
     const name = typeAlias.name.name;
     const definition = typeAlias.definition;
     
@@ -161,7 +168,7 @@ export class TypeGenerator {
     }
   }
 
-  private generateCode(): string {
+  protected generateCode(): string {
     const parts: string[] = [];
     
     // Generate interfaces

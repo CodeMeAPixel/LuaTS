@@ -18,7 +18,7 @@ if (!fs.existsSync(SNAPSHOTS_DIR)) {
 // Helper for snapshot testing
 function testFixture(fixtureName: string) {
   const fixturePath = path.join(FIXTURES_DIR, `${fixtureName}.lua`);
-  const snapshotPath = path.join(SNAPSHOTS_DIR, `${fixtureName}.ts.snap`);
+  const snapshotPath = path.join(SNAPSHOTS_DIR, `${fixtureName}.ts`);
   
   // Skip if fixture doesn't exist
   if (!fs.existsSync(fixturePath)) {
@@ -31,14 +31,17 @@ function testFixture(fixtureName: string) {
   
   // Create snapshot if it doesn't exist
   if (!fs.existsSync(snapshotPath)) {
-    fs.writeFileSync(snapshotPath, generatedTypes);
+    fs.writeFileSync(snapshotPath, generatedTypes, 'utf-8');
     console.log(`Created new snapshot for ${fixtureName}`);
     return;
   }
   
-  // Compare with existing snapshot
+  // Compare with existing snapshot - normalize line endings
   const snapshot = fs.readFileSync(snapshotPath, 'utf-8');
-  expect(generatedTypes).toBe(snapshot);
+  const normalizedGenerated = generatedTypes.replace(/\r\n/g, '\n');
+  const normalizedSnapshot = snapshot.replace(/\r\n/g, '\n');
+  
+  expect(normalizedGenerated).toBe(normalizedSnapshot);
 }
 
 // Create some example fixtures

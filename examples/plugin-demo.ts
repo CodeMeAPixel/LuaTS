@@ -1,7 +1,6 @@
 import { parseLuau, generateTypes, generateTypesWithPlugins } from '../src/index';
 import ReadonlyPlugin from './readonly-plugin';
-import { loadPlugins, applyPlugins } from '../src/plugins/plugin-system';
-import { TypeGenerator } from '../src/generators';
+import { applyPlugins, createPluginAwareGenerator } from '../src/plugins/plugin-system';
 
 // Example Luau code with type definitions
 const luauCode = `
@@ -49,32 +48,55 @@ async function runDemo() {
     console.error('❌ Type generation error:', error);
   }
 
-  console.log('\n=== TypeScript Generation with Plugin ===');
+  console.log('\n=== TypeScript Generation with Object Plugin ===');
   try {
-    // Method 1: Using generateTypesWithPlugins
+    // Method 1: Using generateTypesWithPlugins with object plugin
     const typesWithPlugin = await generateTypesWithPlugins(
       luauCode,
       { useUnknown: true },
-      ['./examples/readonly-plugin.js']
+      [ReadonlyPlugin] // Pass the plugin object directly
     );
     
-    // Method 2: Manual plugin application (for demonstration)
-    const ast = parseLuau(luauCode);
-    const generator = new TypeGenerator({ generateComments: true });
-    
-    // Apply the plugin directly
-    applyPlugins(generator, [ReadonlyPlugin], {
-      typeGeneratorOptions: { generateComments: true },
-      config: { preserveComments: true, commentStyle: 'jsdoc' }
-    });
-    
-    const typesWithManualPlugin = generator.generateTypeScript(ast);
-    
-    console.log('✅ Generated TypeScript interfaces with readonly plugin:');
-    console.log(typesWithManualPlugin);
+    console.log('✅ Generated TypeScript with ReadonlyPlugin:');
+    console.log(typesWithPlugin);
   } catch (error) {
     console.error('❌ Plugin-based type generation error:', error);
   }
+
+  console.log('\n=== TypeScript Generation with File Plugin ===');
+  try {
+    // Method 2: Using generateTypesWithPlugins with file path
+    const typesWithFilePlugin = await generateTypesWithPlugins(
+      luauCode,
+      { useUnknown: true },
+      ['./examples/plugins/custom-number-plugin.js'] // Load from file
+    );
+    
+    console.log('✅ Generated TypeScript with file-based plugin:');
+    console.log(typesWithFilePlugin);
+  } catch (error) {
+    console.error('❌ File plugin generation error:', error);
+  }
+
+  console.log('\n=== Manual Plugin Application ===');
+  try {
+    // Method 3: Manual plugin application using createPluginAwareGenerator
+    const generator = createPluginAwareGenerator({ 
+      useUnknown: true,
+      includeSemicolons: true 
+    });
+    
+    // Apply the plugin manually
+    generator.addPlugin(ReadonlyPlugin);
+    
+    const typesWithManualPlugin = generator.generateTypeScript(luauCode);
+    
+    console.log('✅ Generated TypeScript with manually applied plugin:');
+    console.log(typesWithManualPlugin);
+  } catch (error) {
+    console.error('❌ Manual plugin application error:', error);
+  }
 }
 
+// Run the demo
 runDemo().catch(console.error);

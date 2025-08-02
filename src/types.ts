@@ -253,7 +253,21 @@ export interface Parameter extends ASTNode {
 
 export interface TableType extends ASTNode {
   type: 'TableType';
-  fields: TableTypeField[];
+  fields?: TableTypeField[];
+  properties?: PropertySignature[]; // Add this for parser compatibility
+}
+
+export interface PropertySignature extends ASTNode {
+  type: 'PropertySignature';
+  key: Identifier;
+  typeAnnotation: LuauType;
+  optional: boolean;
+}
+
+export interface IndexSignature extends ASTNode {
+  type: 'IndexSignature';
+  keyType: LuauType;
+  valueType: LuauType;
 }
 
 export interface TableTypeField extends ASTNode {

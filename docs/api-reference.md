@@ -12,42 +12,133 @@ permalink: /api-reference
 This section provides detailed documentation for the LuaTS API.
 {: .fs-6 .fw-300 }
 
-LuaTS provides a comprehensive API for parsing, formatting, and type generation. The main components are:
+LuaTS provides a comprehensive API for parsing, formatting, and type generation. The library is built with a modular architecture that separates concerns across different components.
 
 ## Core Components
 
-- **LuaParser**: Parse standard Lua code into an Abstract Syntax Tree.
-- **LuauParser**: Parse Luau code with support for type annotations and modern syntax features.
-- **LuaFormatter**: Format Lua/Luau code with customizable styling options.
-- **TypeGenerator**: Generate TypeScript interfaces from Luau type definitions.
-- **MarkdownGenerator**: Generate Markdown documentation from API/type definitions.  
-  See [`src/generators/markdown/generator.ts`](../src/generators/markdown/generator.ts).
-- **Lexer**: Tokenize Lua/Luau code.
+### Parsers
+- **[LuaParser](./parsers)**: Parse standard Lua code into Abstract Syntax Trees
+- **[LuauParser](./parsers)**: Parse Luau code with type annotations and modern syntax
+
+### Clients  
+- **[LuaFormatter](./formatter)**: Format Lua/Luau code with customizable styling
+- **[Lexer](./lexer)**: Tokenize Lua/Luau code with component-based architecture
+
+### Generators
+- **[TypeGenerator](./type-generator)**: Convert Luau types to TypeScript interfaces
+- **[MarkdownGenerator](./markdown-generator)**: Generate documentation from API definitions
+
+### Plugin System
+- **[Plugin Interface](../plugins)**: Extend and customize type generation
+- **Plugin Registry**: Manage multiple plugins
+- **File-based Plugin Loading**: Load plugins from JavaScript/TypeScript files
 
 ## Convenience Functions
 
-- **parseLua(code)**: Parse Lua code and return an AST.
-- **parseLuau(code)**: Parse Luau code with type annotations and return an AST.
-- **formatLua(ast)**: Format an AST back to Lua code.
-- **formatLuau(ast)**: Format an AST back to Luau code.
-- **generateTypes(code, options?)**: Generate TypeScript interfaces from Luau type definitions.
-- **generateTypesWithPlugins(code, options?, plugins?)**: Generate TypeScript interfaces with plugin support.
-- **analyze(code, isLuau?)**: Analyze code and return detailed information.
+These functions provide quick access to common operations:
 
-## Additional Components
+```typescript
+import { 
+  parseLua, 
+  parseLuau, 
+  formatLua, 
+  generateTypes,
+  generateTypesWithPlugins,
+  analyze 
+} from 'luats';
+```
 
-- **MarkdownGenerator**: Generate Markdown documentation from parsed API/type definitions.  
-  See [`src/generators/markdown/generator.ts`](../src/generators/markdown/generator.ts).
-- **Plugin System**: Extend and customize type generation.  
-  See [Plugin System Documentation](../plugins.md) for full details and examples.
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `parseLua(code)` | Parse Lua code | `AST.Program` |
+| `parseLuau(code)` | Parse Luau code with types | `AST.Program` |
+| `formatLua(ast)` | Format AST to Lua code | `string` |
+| `generateTypes(code, options?)` | Generate TypeScript from Luau | `string` |
+| `generateTypesWithPlugins(code, options?, plugins?)` | Generate with plugins | `Promise<string>` |
+| `analyze(code, isLuau?)` | Analyze code structure | `AnalysisResult` |
 
 ## Type Definitions
 
-LuaTS exports various TypeScript interfaces and types to help you work with the library:
+LuaTS exports comprehensive TypeScript definitions:
 
-- **AST**: Abstract Syntax Tree types for Lua/Luau code.
-- **Token**: Represents a token in the lexical analysis.
-- **FormatterOptions**: Options for formatting code.
-- **TypeGeneratorOptions**: Options for generating TypeScript code.
-- **Plugin**: Interface for creating plugins.
+```typescript
+import * as AST from 'luats/types';
+import { Token, TokenType } from 'luats/clients/lexer';
+import { TypeGeneratorOptions } from 'luats/generators/typescript';
+import { Plugin } from 'luats/plugins/plugin-system';
+```
+
+### Core Types
+
+- **AST Nodes**: Complete type definitions for Lua/Luau syntax trees
+- **Tokens**: Lexical analysis tokens with position information
+- **Options**: Configuration interfaces for all components
+- **Plugin Interface**: Type-safe plugin development
+
+## Modular Imports
+
+You can import specific modules for fine-grained control:
+
+```typescript
+// Parsers
+import { LuaParser } from 'luats/parsers/lua';
+import { LuauParser } from 'luats/parsers/luau';
+
+// Clients
+import { LuaFormatter } from 'luats/clients/formatter';
+import { Lexer } from 'luats/clients/lexer';
+
+// Generators
+import { TypeGenerator } from 'luats/generators/typescript';
+import { MarkdownGenerator } from 'luats/generators/markdown';
+
+// Plugin System
+import { loadPlugin, applyPlugins } from 'luats/plugins/plugin-system';
+```
+
+## Architecture Overview
+
+LuaTS uses a modular architecture with clear separation of concerns:
+
+```
+src/
+├── parsers/          # Code parsing (Lua, Luau)
+├── clients/          # Code processing (Lexer, Formatter)  
+│   └── components/   # Modular lexer components
+├── generators/       # Code generation (TypeScript, Markdown)
+├── plugins/          # Plugin system and extensions
+├── cli/              # Command-line interface
+└── types.ts          # Core AST type definitions
+```
+
+### Component Features
+
+- **Modular Lexer**: Specialized tokenizers for different language constructs
+- **Plugin Architecture**: Extensible transformation pipeline
+- **Type-Safe APIs**: Full TypeScript support throughout
+- **Configuration System**: Flexible options for all components
+
+## Error Handling
+
+All components provide comprehensive error handling:
+
+```typescript
+import { ParseError } from 'luats/parsers/lua';
+
+try {
+  const ast = parseLua(invalidCode);
+} catch (error) {
+  if (error instanceof ParseError) {
+    console.error(`Parse error at ${error.token.line}:${error.token.column}`);
+  }
+}
+```
+
+## Performance Considerations
+
+- **Streaming Parsing**: Efficient memory usage for large files
+- **Incremental Tokenization**: Process code in chunks
+- **Plugin Caching**: Reuse plugin transformations
+- **AST Reuse**: Share parsed trees across operations
+
 For detailed information on each component, see the individual API pages in this section.

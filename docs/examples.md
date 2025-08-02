@@ -72,6 +72,107 @@ export interface GameState {
 }
 ```
 
+## Working with the Modular Lexer
+
+LuaTS features a component-based lexer system. Here's how to work with individual components:
+
+### Using Individual Tokenizers
+
+```typescript
+import { 
+  Lexer, 
+  TokenType,
+  NumberTokenizer,
+  StringTokenizer,
+  IdentifierTokenizer,
+  CommentTokenizer 
+} from 'luats/clients/lexer';
+
+// Create lexer context
+const lexer = new Lexer(`
+  local name: string = "World"
+  local count: number = 42
+  -- This is a comment
+`);
+
+// Tokenize and examine results
+const tokens = lexer.tokenize();
+tokens.forEach(token => {
+  console.log(`${token.type}: "${token.value}" at ${token.line}:${token.column}`);
+});
+
+// Example output:
+// LOCAL: "local" at 2:3
+// IDENTIFIER: "name" at 2:9
+// COLON: ":" at 2:13
+// IDENTIFIER: "string" at 2:21
+// ASSIGN: "=" at 2:23
+// STRING: ""World"" at 2:31
+```
+
+### Custom Tokenizer Implementation
+
+```typescript
+import { BaseTokenizer, TokenizerContext, TokenType } from 'luats/clients/lexer';
+
+class CustomTokenizer extends BaseTokenizer {
+  canHandle(char: string): boolean {
+    return char === '@'; // Handle custom @ symbol
+  }
+
+  tokenize(): Token {
+    const start = this.context.position - 1;
+    
+    // Consume @ symbol and following identifier
+    while (/[a-zA-Z0-9_]/.test(this.context.peek())) {
+      this.context.advance();
+    }
+    
+    return this.context.createToken(
+      TokenType.IDENTIFIER, // Or custom token type
+      this.context.input.slice(start, this.context.position)
+    );
+  }
+}
+```
+
+## Advanced Parsing with AST Manipulation
+
+```typescript
+import { parseLuau, LuauParser } from 'luats';
+import * as AST from 'luats/types';
+
+const luauCode = `
+  type User = {
+    name: string,
+    age: number,
+    permissions: {
+      canEdit: boolean,
+      canDelete: boolean
+    }
+  }
+`;
+
+// Parse and examine AST structure
+const ast = parseLuau(luauCode);
+
+// Walk the AST
+function walkAST(node: any, depth = 0) {
+  const indent = '  '.repeat(depth);
+  console.log(`${indent}${node.type}`);
+  
+  if (node.body) {
+    node.body.forEach((child: any) => walkAST(child, depth + 1));
+  }
+  
+  if (node.definition && typeof node.definition === 'object') {
+    walkAST(node.definition, depth + 1);
+  }
+}
+
+walkAST(ast);
+```
+
 ## Working with Optional Properties
 
 Converting Luau optional types to TypeScript optional properties:
@@ -106,7 +207,7 @@ export interface UserProfile {
 }
 ```
 
-## Function Types
+## Function Types and Method Signatures
 
 Converting Luau function types to TypeScript function types:
 
@@ -132,238 +233,378 @@ export interface Callbacks {
 }
 ```
 
-## Record Types
+## Plugin Development Examples
 
-Converting Luau dictionary types to TypeScript record types:
-
-### Luau Input
-
-```lua
-type Dictionary = {
-  [string]: any  -- String keys with any values
-}
-
-type NumberMap = {
-  [number]: string  -- Number keys with string values
-}
-
-type Mixed = {
-  [string]: any,
-  [number]: boolean,
-  name: string  -- Named property
-}
-```
-
-### TypeScript Output
+### Type Transformation Plugin
 
 ```typescript
-export interface Dictionary {
-  [key: string]: any;
-}
-
-export interface NumberMap {
-  [key: number]: string;
-}
-
-export interface Mixed {
-  [key: string]: any;
-  [key: number]: boolean;
-  name: string;
-}
-```
-
-## Using Plugins
-
-Example of using a plugin to customize type generation:
-
-### Luau Input
-
-```lua
-type Person = {
-  name: string,
-  age: number
-}
-```
-
-### Plugin Definition
-
-```typescript
-// readonly-plugin.ts
+// safe-types-plugin.ts
 import { Plugin } from 'luats';
 
-const ReadonlyPlugin: Plugin = {
-  name: 'ReadonlyPlugin',
-  description: 'Makes all properties readonly',
+const SafeTypesPlugin: Plugin = {
+  name: 'SafeTypesPlugin',
+  description: 'Wraps primitive types with branded types for safety',
+  version: '1.0.0',
   
-  transformInterface: (interfaceName, properties, options) => {
-    // Mark all properties as readonly
-    properties.forEach(prop => {
-      prop.readonly = true;
-    });
+  transformType: (luauType, tsType, options) => {
+    const safeTypes: Record<string, string> = {
+      'NumberType': 'SafeNumber',
+      'StringType': 'SafeString',
+      'BooleanType': 'SafeBoolean'
+    };
     
-    return { name: interfaceName, properties };
+    return safeTypes[luauType] || tsType;
+  },
+  
+  postProcess: (generatedCode, options) => {
+    const brandedTypes = `
+// Branded types for runtime safety
+type SafeNumber = number & { __brand: 'SafeNumber' };
+type SafeString = string & { __brand: 'SafeString' };
+type SafeBoolean = boolean & { __brand: 'SafeBoolean' };
+
+`;
+    return brandedTypes + generatedCode;
   }
 };
 
-export default ReadonlyPlugin;
+export default SafeTypesPlugin;
 ```
 
-### TypeScript Output (with Plugin)
+### Interface Enhancement Plugin
 
 ```typescript
-export interface Person {
-  readonly name: string;
-  readonly age: number;
-}
-```
+// metadata-plugin.ts  
+import { Plugin } from 'luats';
 
-## Programmatic Usage
-
-Example of using LuaTS programmatically:
-
-```typescript
-import { 
-  LuauParser, 
-  TypeGenerator, 
-  LuaFormatter,
-  generateTypes
-} from 'luats';
-import fs from 'fs';
-
-// Simple conversion with convenience function
-const luauCode = fs.readFileSync('types.lua', 'utf-8');
-const tsInterfaces = generateTypes(luauCode);
-fs.writeFileSync('types.d.ts', tsInterfaces, 'utf-8');
-
-// Advanced usage with custom options
-const parser = new LuauParser();
-const generator = new TypeGenerator({
-  useUnknown: true,
-  exportTypes: true,
-  generateComments: true
-});
-
-const ast = parser.parse(luauCode);
-const typescriptCode = generator.generateFromLuauAST(ast);
-fs.writeFileSync('types-advanced.d.ts', typescriptCode, 'utf-8');
-
-// Formatting Lua code
-const formatter = new LuaFormatter({
-  indentSize: 2,
-  insertSpaceAroundOperators: true
-});
-
-const formattedLua = formatter.format(ast);
-fs.writeFileSync('formatted.lua', formattedLua, 'utf-8');
-```
-
-## CLI Examples
-
-Using the LuaTS CLI:
-
-```bash
-# Convert a single file
-npx luats convert src/player.lua -o src/player.d.ts
-
-# Convert all files in a directory
-npx luats dir src/lua -o src/types
-
-# Watch for changes
-npx luats dir src/lua -o src/types --watch
-
-# Use a custom config file
-npx luats dir src/lua -o src/types --config custom-config.json
-```
-
-## Comment Preservation
-
-Example of preserving comments from Luau code:
-
-### Luau Input
-
-```lua
--- User type definition
--- Represents a user in the system
-type User = {
-  id: number,  -- Unique identifier
-  name: string,  -- Display name
-  email: string?,  -- Optional email address
+const MetadataPlugin: Plugin = {
+  name: 'MetadataPlugin',
+  description: 'Adds metadata fields to all interfaces',
   
-  -- User permissions
-  permissions: {
-    canEdit: boolean,  -- Can edit content
-    canDelete: boolean,  -- Can delete content
-    isAdmin: boolean  -- Has admin privileges
+  transformInterface: (name, properties, options) => {
+    const enhancedProperties = [
+      ...properties,
+      {
+        name: '__typename',
+        type: `'${name}'`,
+        optional: false,
+        description: 'Type identifier for runtime checks'
+      },
+      {
+        name: '__metadata',
+        type: 'Record<string, unknown>',
+        optional: true,
+        description: 'Additional runtime metadata'
+      }
+    ];
+    
+    return { name, properties: enhancedProperties };
   }
-}
+};
 ```
 
-### TypeScript Output (with Comment Preservation)
+### Documentation Enhancement Plugin
 
 ```typescript
-/**
- * User type definition
- * Represents a user in the system
+// docs-plugin.ts
+import { Plugin } from 'luats';
+
+const DocsPlugin: Plugin = {
+  name: 'DocsPlugin',
+  description: 'Enhances generated TypeScript with comprehensive documentation',
+  
+  postProcess: (generatedCode, options) => {
+    const header = `/**
+ * Auto-generated TypeScript definitions
+ * 
+ * Generated from Luau type definitions on ${new Date().toISOString()}
+ * 
+ * @fileoverview Type definitions for Luau interfaces
+ * @version ${options.version || '1.0.0'}
  */
-export interface User {
-  /** Unique identifier */
-  id: number;
-  /** Display name */
-  name: string;
-  /** Optional email address */
-  email?: string;
-  
-  /**
-   * User permissions
-   */
-  permissions: {
-    /** Can edit content */
-    canEdit: boolean;
-    /** Can delete content */
-    canDelete: boolean;
-    /** Has admin privileges */
-    isAdmin: boolean;
-  };
-}
+
+`;
+
+    // Add @example tags to interfaces
+    const documentedCode = generatedCode.replace(
+      /(interface \w+) \{/g,
+      (match, interfaceName) => {
+        return `/**
+ * ${interfaceName}
+ * @example
+ * const instance: ${interfaceName.split(' ')[1]} = {
+ *   // Implementation here
+ * };
+ */
+${match}`;
+      }
+    );
+
+    return header + documentedCode;
+  }
+};
 ```
 
-## Integration with Build Tools
+## Using Multiple Plugins Together
 
-Example of integrating LuaTS with npm scripts:
+```typescript
+import { generateTypesWithPlugins } from 'luats';
+import SafeTypesPlugin from './plugins/safe-types-plugin';
+import MetadataPlugin from './plugins/metadata-plugin';
+import DocsPlugin from './plugins/docs-plugin';
 
-```json
-{
-  "scripts": {
-    "build:types": "luats dir src/lua -o src/types",
-    "watch:types": "luats dir src/lua -o src/types --watch",
-    "prebuild": "npm run build:types"
+const luauCode = `
+  type User = {
+    id: number,
+    name: string,
+    active: boolean
+  }
+`;
+
+const result = await generateTypesWithPlugins(
+  luauCode,
+  { useUnknown: true },
+  [SafeTypesPlugin, MetadataPlugin, DocsPlugin]
+);
+
+console.log(result);
+```
+
+## Advanced Lexer Usage
+
+### Creating Custom Lexer Components
+
+```typescript
+import { Lexer, KEYWORDS, OPERATORS } from 'luats/clients/lexer';
+
+// Extend the lexer with custom operators
+const customOperators = new Map([
+  ...OPERATORS,
+  ['@', { single: TokenType.IDENTIFIER }], // Custom @ operator
+  ['$', { single: TokenType.IDENTIFIER }]  // Custom $ operator
+]);
+
+// Create lexer with custom configuration
+class CustomLexer extends Lexer {
+  constructor(input: string) {
+    super(input);
+    // Custom initialization if needed
+  }
+  
+  // Override tokenization for special cases
+  protected tryTokenizeMultiCharOperator(char: string) {
+    if (char === '@' && this.peek() === '@') {
+      this.advance();
+      return this.createToken(TokenType.IDENTIFIER, '@@');
+    }
+    
+    return super.tryTokenizeMultiCharOperator(char);
   }
 }
 ```
 
-Example of using LuaTS in a webpack build process:
+## Programmatic Usage Patterns
+
+### Batch Processing
+
+```typescript
+import { generateTypes, parseLuau } from 'luats';
+import fs from 'fs';
+import path from 'path';
+import glob from 'glob';
+
+async function processLuauFiles(sourceDir: string, outputDir: string) {
+  const luauFiles = glob.sync('**/*.luau', { cwd: sourceDir });
+  
+  for (const file of luauFiles) {
+    const sourcePath = path.join(sourceDir, file);
+    const outputPath = path.join(outputDir, file.replace('.luau', '.d.ts'));
+    
+    try {
+      const luauCode = fs.readFileSync(sourcePath, 'utf-8');
+      const tsCode = generateTypes(luauCode, {
+        useUnknown: true,
+        includeSemicolons: true,
+        preserveComments: true
+      });
+      
+      // Ensure output directory exists
+      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+      fs.writeFileSync(outputPath, tsCode, 'utf-8');
+      
+      console.log(`✅ Converted ${file}`);
+    } catch (error) {
+      console.error(`❌ Failed to convert ${file}:`, error.message);
+    }
+  }
+}
+
+// Usage
+processLuauFiles('./src/lua', './src/types');
+```
+
+### Watch Mode Implementation
+
+```typescript
+import { watch } from 'fs';
+import { generateTypes } from 'luats';
+
+function watchLuauFiles(sourceDir: string, outputDir: string) {
+  console.log(`👀 Watching ${sourceDir} for changes...`);
+  
+  watch(sourceDir, { recursive: true }, (eventType, filename) => {
+    if (filename?.endsWith('.luau') && eventType === 'change') {
+      const sourcePath = path.join(sourceDir, filename);
+      const outputPath = path.join(outputDir, filename.replace('.luau', '.d.ts'));
+      
+      try {
+        const luauCode = fs.readFileSync(sourcePath, 'utf-8');
+        const tsCode = generateTypes(luauCode);
+        
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+        fs.writeFileSync(outputPath, tsCode, 'utf-8');
+        
+        console.log(`🔄 Updated ${filename}`);
+      } catch (error) {
+        console.error(`❌ Failed to update ${filename}:`, error.message);
+      }
+    }
+  });
+}
+```
+
+## Integration Examples
+
+### Webpack Integration
 
 ```javascript
 // webpack.config.js
-const { exec } = require('child_process');
+const { generateTypes } = require('luats');
+const glob = require('glob');
+
+class LuauTypesPlugin {
+  apply(compiler) {
+    compiler.hooks.beforeCompile.tapAsync('LuauTypesPlugin', (compilation, callback) => {
+      const luauFiles = glob.sync('src/**/*.luau');
+      
+      Promise.all(luauFiles.map(async (file) => {
+        const luauCode = require('fs').readFileSync(file, 'utf-8');
+        const tsCode = await generateTypes(luauCode);
+        const outputPath = file.replace('.luau', '.d.ts');
+        
+        require('fs').writeFileSync(outputPath, tsCode, 'utf-8');
+      })).then(() => {
+        console.log('Generated TypeScript definitions from Luau files');
+        callback();
+      }).catch(callback);
+    });
+  }
+}
 
 module.exports = {
-  // webpack configuration
+  // ...webpack config
   plugins: [
-    {
-      apply: (compiler) => {
-        compiler.hooks.beforeCompile.tapAsync('GenerateTypes', (compilation, callback) => {
-          exec('npx luats dir src/lua -o src/types', (err, stdout, stderr) => {
-            if (err) {
-              console.error(stderr);
-            } else {
-              console.log(stdout);
-            }
-            callback();
-          });
-        });
-      },
-    },
-  ],
+    new LuauTypesPlugin()
+  ]
 };
 ```
+
+### VS Code Extension Integration
+
+```typescript
+// extension.ts
+import * as vscode from 'vscode';
+import { generateTypes, parseLuau } from 'luats';
+
+export function activate(context: vscode.ExtensionContext) {
+  // Command to generate TypeScript definitions
+  const generateTypesCommand = vscode.commands.registerCommand(
+    'luats.generateTypes',
+    async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor || !editor.document.fileName.endsWith('.luau')) {
+        vscode.window.showErrorMessage('Please open a .luau file');
+        return;
+      }
+
+      try {
+        const luauCode = editor.document.getText();
+        const tsCode = generateTypes(luauCode, {
+          useUnknown: true,
+          includeSemicolons: true
+        });
+
+        const outputPath = editor.document.fileName.replace('.luau', '.d.ts');
+        const outputUri = vscode.Uri.file(outputPath);
+        
+        await vscode.workspace.fs.writeFile(
+          outputUri, 
+          Buffer.from(tsCode, 'utf-8')
+        );
+
+        vscode.window.showInformationMessage(
+          `Generated TypeScript definitions: ${outputPath}`
+        );
+      } catch (error) {
+        vscode.window.showErrorMessage(`Error: ${error.message}`);
+      }
+    }
+  );
+
+  context.subscriptions.push(generateTypesCommand);
+}
+```
+
+## Testing with LuaTS
+
+### Unit Testing Generated Types
+
+```typescript
+// types.test.ts
+import { generateTypes } from 'luats';
+import { describe, test, expect } from 'bun:test';
+
+describe('Type Generation', () => {
+  test('should generate correct interface', () => {
+    const luauCode = `
+      type User = {
+        id: number,
+        name: string,
+        active?: boolean
+      }
+    `;
+
+    const result = generateTypes(luauCode);
+    
+    expect(result).toContain('interface User');
+    expect(result).toContain('id: number');
+    expect(result).toContain('name: string');
+    expect(result).toContain('active?: boolean');
+  });
+
+  test('should handle complex nested types', () => {
+    const luauCode = `
+      type Config = {
+        database: {
+          host: string,
+          port: number,
+          credentials?: {
+            username: string,
+            password: string
+          }
+        },
+        features: {string}
+      }
+    `;
+
+    const result = generateTypes(luauCode);
+    
+    expect(result).toContain('interface Config');
+    expect(result).toContain('database: {');
+    expect(result).toContain('credentials?: {');
+    expect(result).toContain('features: string[]');
+  });
+});
+```
+
+These examples demonstrate the full power and flexibility of LuaTS, from basic type conversion to advanced plugin development and integration scenarios.

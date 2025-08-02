@@ -74,7 +74,22 @@ describe('Advanced Type Conversion', () => {
     const code = `
       type NetworkRequest = 
         { type: "GET", url: string } |
-        { type: "POST", url: string, body: any }
+        { type: "POST", url: string, body: any } |
+        { type: "PATCH", url: string }
+    `;
+    
+    const types = generateTypes(code);
+    expect(types).toContain('type NetworkRequest =');
+    expect(types).toContain('{ type: "GET", url: string }');
+    expect(types).toContain('{ type: "POST", url: string, body: any }');
+  });
+
+  test('Convert union types with object literals and intersection', () => {
+    const code = `
+      type NetworkRequest = 
+        ({ type: "GET", url: string } |
+        { type: "POST", url: string, body: any } |
+        { type: "PATCH", url: string }) & {baz: string}
     `;
     
     const types = generateTypes(code);
