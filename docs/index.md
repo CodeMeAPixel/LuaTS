@@ -60,17 +60,6 @@ console.log(tsCode);
 // }
 ```
 
-## Test & Coverage Reporting
-
-LuaTS supports Bun's built-in test runner. For coverage, run:
-
-```bash
-bun test --coverage
-```
-
-This generates `test/lcov.info` for coverage reporting.  
-For test pass/fail reporting, use the CLI output or a compatible reporter.
-
 ## License
 
 LuaTS is distributed under the [MIT license](https://github.com/codemeapixel/luats/blob/main/LICENSE).

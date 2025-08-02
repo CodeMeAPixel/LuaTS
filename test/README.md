@@ -11,13 +11,6 @@ This directory contains the comprehensive test suite for the Luats library. The 
 - **plugins.test.ts**: Plugin system tests
 - **snapshots.test.ts**: Snapshot testing for type generation
 
-## Test Status
-
-<!-- TEST_RESULTS_START -->
-- ✅ **Passing:** Most core and feature tests
-- ❌ **Failing:** See [FAILING_TESTS.md](../FAILING_TESTS.md) for details on failing and incomplete tests.
-<!-- TEST_RESULTS_END -->
-
 ## Test Coverage
 
 The test suite aims to provide comprehensive coverage of the Luats codebase. You can run the tests with coverage reports using:
@@ -88,3 +81,53 @@ Use the debug scripts in this directory for troubleshooting:
 - `debug/test-hanging.ts`: Tests for parser edge cases
 - `debug/test-multiple.ts`: Tests for multiple type definitions
 - `debug/test-demo-structure.ts`: Tests for the demo code structure
+
+<!-- TEST_RESULTS_START -->
+## Test Results
+
+| Test Name | Status |
+|-----------|--------|
+| test\index.test.ts > Parse simple Lua code | ✅ Pass |
+| test\index.test.ts > Parse Luau with type annotations | ✅ Pass |
+| test\index.test.ts > Format Lua code | ✅ Pass |
+| test\index.test.ts > Generate TypeScript types from Luau | ✅ Pass |
+| test\index.test.ts > Analyze code with errors | ✅ Pass |
+| test\index.test.ts > Complex Luau parsing | ✅ Pass |
+| test\features.test.ts > Parse simple Lua code | ✅ Pass |
+| test\features.test.ts > Format Lua code | ✅ Pass |
+| test\features.test.ts > Analyze code with errors | ✅ Pass |
+| test\features.test.ts > Parse Luau with type annotations | ✅ Pass |
+| test\features.test.ts > Parse complex nested types | ✅ Pass |
+| test\features.test.ts > Generate TypeScript interfaces from Luau | ✅ Pass |
+| test\features.test.ts > Convert optional types | ✅ Pass |
+| test\features.test.ts > Convert array types | ✅ Pass |
+| test\features.test.ts > Convert record types | ✅ Pass |
+| test\features.test.ts > Convert function types | ✅ Pass |
+| test\features.test.ts > Convert method types | ✅ Pass |
+| test\features.test.ts > Convert union types | ✅ Pass |
+| test\features.test.ts > Preserve single-line comments | ❌ Fail |
+| test\features.test.ts > Preserve multi-line comments | ❌ Fail |
+| test\features.test.ts > Handle syntax errors | ❌ Fail |
+| test\features.test.ts > Handle type errors | ✅ Pass |
+| test\features.test.ts > Apply plugin transforms | ✅ Pass |
+| test\types.test.ts > Convert nested complex types | ✅ Pass |
+| test\types.test.ts > Convert array of custom types | ✅ Pass |
+| test\types.test.ts > Convert optional nested types | ✅ Pass |
+| test\types.test.ts > Convert union types with object literals | ❌ Fail |
+| test\types.test.ts > Convert function with multiple parameters | ✅ Pass |
+| test\types.test.ts > Handle recursive types | ✅ Pass |
+| test\types.test.ts > Convert generic types | ✅ Pass |
+| test\types.test.ts > Convert indexed access types | ✅ Pass |
+| test\types.test.ts > Use unknown instead of any | ❌ Fail |
+| test\types.test.ts > Prefix interface names | ❌ Fail |
+| test\types.test.ts > Generate semicolons based on option | ❌ Fail |
+| test\snapshots.test.ts > Basic types snapshot | ✅ Pass |
+| test\snapshots.test.ts > Game types snapshot | ❌ Fail |
+| test\plugins.test.ts > Plugin can transform types | ✅ Pass |
+| test\plugins.test.ts > Can use plugin object directly | ✅ Pass |
+| test\cli.test.ts > Convert a single file | ❌ Fail |
+| test\cli.test.ts > Convert a directory | ❌ Fail |
+| test\cli.test.ts > Validate a file | ❌ Fail |
+| test\cli.test.ts > Use config file | ❌ Fail |
+| **Total** | 30 / 42 passed |
+<!-- TEST_RESULTS_END -->

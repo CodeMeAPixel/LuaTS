@@ -61,3 +61,5 @@ ignored/
 # Build output
 node_modules/
 dist/
+scripts/
+test/junit.xml

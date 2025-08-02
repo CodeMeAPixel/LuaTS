@@ -1,6 +1,7 @@
 # Development files
 src/
 test/
+scripts/
 examples/
 docs/
 .github/

@@ -7,7 +7,7 @@ This guide will help you contribute to the LuaTS project.
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) (preferred) or Node.js
+- [Bun](https://bun.sh/) (required for full development experience)
 - Git
 
 ### Setting Up the Development Environment
@@ -21,12 +21,10 @@ This guide will help you contribute to the LuaTS project.
 3. Install dependencies:
    ```bash
    bun install
-   # or npm install
    ```
 4. Build the project:
    ```bash
    bun run build
-   # or npm run build
    ```
 
 ## Development Workflow
@@ -35,7 +33,6 @@ This guide will help you contribute to the LuaTS project.
 
 ```bash
 bun run dev
-# or npm run dev
 ```
 
 This will run the project in watch mode, automatically recompiling when files change.
@@ -44,22 +41,22 @@ This will run the project in watch mode, automatically recompiling when files ch
 
 ```bash
 bun test
-# or npm test
 ```
 
-To run tests in watch mode:
+To run tests with coverage:
 
 ```bash
-bun test --watch
-# or npm run test:watch
+bun test --coverage
 ```
 
 To run a specific test file:
 
 ```bash
 bun test test/features.test.ts
-# or npm run test:specific
 ```
+
+> **Note:**  
+> LuaTS is developed and tested primarily with Bun. Node.js is not officially supported for development or testing.
 
 ### Linting and Formatting
 
@@ -67,21 +64,18 @@ To lint the code:
 
 ```bash
 bun run lint
-# or npm run lint
 ```
 
 To fix linting issues automatically:
 
 ```bash
 bun run lint:fix
-# or npm run lint:fix
 ```
 
 To format the code with Prettier:
 
 ```bash
 bun run format
-# or npm run format
 ```
 
 ## Project Structure
@@ -175,6 +169,11 @@ LuaTS follows [Semantic Versioning](https://semver.org/):
   - Actual behavior
   - Steps to reproduce
   - Environment details (OS, Node.js version, etc.)
+- For feature requests, describe the problem you're trying to solve
+
+## License
+
+By contributing to LuaTS, you agree that your contributions will be licensed under the project's [MIT License](https://github.com/codemeapixel/luats/blob/main/LICENSE).
 - For feature requests, describe the problem you're trying to solve
 
 ## License
