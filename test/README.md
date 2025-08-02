@@ -22,10 +22,6 @@ bun test --coverage
 After running tests, coverage is reported in `test/lcov.info`.  
 You can use [coverage tools](https://github.com/bcoe/nyc) to visualize this file.
 
-## Failing and Passing Tests
-
-See [FAILING_TESTS.md](../FAILING_TESTS.md) for a checklist of failing and passing tests, including known issues and incomplete features.
-
 ## Fixtures and Snapshots
 
 The test suite includes fixture-based testing:
