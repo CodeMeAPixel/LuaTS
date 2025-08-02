@@ -47,11 +47,16 @@ export class TypeGenerator {
       } else if (node.name && node.definition) {
         name = node.name.name || node.name;
         value = node.definition;
-        comments = node.comments || node.comments;
+        // Prefer node.comments, fallback to node.definition.comments
+        comments = node.comments || (node.definition ? node.definition.comments : undefined);
       } else {
         return;
       }
       if (typeof name !== 'string') return;
+
+      // Process comments for the type alias
+      const commentStr = comments && comments.length > 0 ? 
+        formatComments(comments) : undefined;
 
       // --- Handle Record types as type aliases ---
       if (
@@ -65,7 +70,7 @@ export class TypeGenerator {
           name,
           type: `Record<${keyType}, ${this.getTypeString(value.fields[0].valueType)}>`,
 
-          description: comments ? formatComments(comments) : undefined
+          description: commentStr
         };
         this.types.set(name, tsType);
         return;
@@ -92,7 +97,7 @@ export class TypeGenerator {
         const tsType: TypeScriptType = {
           name,
           type: `(${params.join(', ')}) => ${ret}`,
-          description: comments ? formatComments(comments) : undefined
+          description: commentStr
         };
         this.types.set(name, tsType);
         return;
@@ -103,16 +108,18 @@ export class TypeGenerator {
         const tsInterface: TypeScriptInterface = {
           name,
           properties: [],
-          description: comments ? formatComments(comments) : undefined
+          description: commentStr
         };
         if (value.fields) {
           for (const field of value.fields) {
+            // Extract field-level comments if present
+            const fieldComments = field.comments ? formatComments(field.comments) : undefined;
+            
             const property: TypeScriptProperty = {
               name: field.name?.name || field.key || '',
               type: this.getTypeString(field.valueType),
               optional: field.optional || false,
-              // Attach field comments if present
-              description: field.comments ? formatComments(field.comments) : undefined
+              description: fieldComments
             };
             tsInterface.properties.push(property);
           }
@@ -126,7 +133,7 @@ export class TypeGenerator {
         const tsType: TypeScriptType = {
           name,
           type: this.getTypeString(value),
-          description: comments ? formatComments(comments) : undefined
+          description: commentStr
         };
         this.types.set(name, tsType);
         return;
@@ -136,7 +143,7 @@ export class TypeGenerator {
       const tsType: TypeScriptType = {
         name,
         type: this.getTypeString(value),
-        description: comments ? formatComments(comments) : undefined
+        description: commentStr
       };
       this.types.set(name, tsType);
     }

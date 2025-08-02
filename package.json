@@ -57,8 +57,9 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
     "prepublishOnly": "bun run build",
-    "test:report": "bun run ./scripts/test-report.ts",
-    "test:coverage": "bun test --reporter=junit --reporter-outfile=./test/junit.xml"
+    "test": "bun test",
+    "test:report": "bun test --reporter=junit --reporter-outfile=./test/junit.xml && bun run scripts/test-report-junit.ts",
+    "test:coverage": "bun test --coverage --reporter=junit --reporter-outfile=./test/junit.xml && bun run scripts/test-report-junit.ts"
   },
   "keywords": [
     "lua",

@@ -37,4 +37,5 @@ export interface TypeGeneratorOptions {
   interfacePrefix?: string;
   semicolons?: boolean;
   commentStyle?: 'jsdoc' | 'inline';
+  generateComments?: boolean; // Add explicit option for comment generation
 }

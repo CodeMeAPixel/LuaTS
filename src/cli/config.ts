@@ -35,7 +35,15 @@ export interface LuatsConfig {
     inferTypes?: boolean;
     strictNullChecks?: boolean;
     robloxTypes?: boolean;
+    useUnknown?: boolean;
+    interfacePrefix?: string;
+    semicolons?: boolean;
+    generateComments?: boolean; // Add explicit option
   };
+  
+  // Comment preservation settings
+  preserveComments?: boolean;
+  commentStyle?: 'jsdoc' | 'inline';
   
   // Plugin configuration
   plugins?: string[];
@@ -70,8 +78,14 @@ export const defaultConfig: LuatsConfig = {
     moduleType: 'esm',
     inferTypes: true,
     strictNullChecks: true,
-    robloxTypes: false
+    robloxTypes: false,
+    generateComments: true, // Enable by default
+    useUnknown: false,
+    semicolons: true
   },
+  
+  preserveComments: true, // Enable by default
+  commentStyle: 'jsdoc',
   
   plugins: [],
   

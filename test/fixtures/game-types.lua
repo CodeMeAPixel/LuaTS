@@ -45,5 +45,5 @@ type GameEvent =
   { type: "PlayerSpawn", player: Player } |
   { type: "PlayerDeath", player: Player, cause: string } |
   { type: "ItemPickup", player: Player, item: Item }
-        { type: "ItemPickup", player: Player, item: Item }
+  { type: "ItemPickup", player: Player, item: Item }
     

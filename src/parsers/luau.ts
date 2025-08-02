@@ -115,21 +115,22 @@ export class LuauParser {
     this.consume(TokenType.ASSIGN, "Expected '=' after type name");
     const definition = this.parseType();
 
-    // Attach pending comments to fields if present
-    if (pendingComments && pendingComments.length && definition && definition.type === 'TableType' && definition.fields) {
-      for (const field of definition.fields) {
-        (field as any).comments = pendingComments;
-      }
-      pendingComments.length = 0;
-    }
-
-    return {
-      type: 'TypeAlias',
+    // Create the TypeAlias node with comments
+    const typeAlias: AST.TypeAlias = {
+      type: 'TypeAlias' as const,
       name,
       typeParameters,
       definition,
       location: this.getLocation(),
     };
+    
+    // Attach comments to the type alias if they exist
+    if (pendingComments && pendingComments.length) {
+      (typeAlias as any).comments = pendingComments;
+      pendingComments.length = 0;
+    }
+
+    return typeAlias;
   }
 
         

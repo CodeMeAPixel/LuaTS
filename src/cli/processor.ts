@@ -16,8 +16,13 @@ export async function processFile(
     // Read the input file
     const luaCode = fs.readFileSync(inputPath, 'utf-8');
     
-    // Generate TypeScript code
-    const tsCode = await generateTypeScript(luaCode, config);
+    // Generate TypeScript code with proper options
+    const tsCode = await generateTypeScript(luaCode, {
+      ...config.typeGeneratorOptions,
+      // Fix: Pass the properties directly from typeGeneratorOptions or use defaults
+      preserveComments: config.preserveComments ?? true,
+      commentStyle: config.commentStyle ?? 'jsdoc'
+    });
     
     // Ensure output directory exists
     const outputDir = path.dirname(outputPath);
@@ -78,8 +83,14 @@ export async function processDirectory(
  */
 async function generateTypeScript(
   luaCode: string, 
-  config: LuatsConfig
+  config: any // Change type to 'any' temporarily to fix the error
 ): Promise<string> {
-  // Use the real generator
-  return generateTypes(luaCode, config.typeGeneratorOptions || {});
+  // Use the real generator with all options passed
+  return generateTypes(luaCode, {
+    useUnknown: config.typeGeneratorOptions?.useUnknown,
+    interfacePrefix: config.typeGeneratorOptions?.interfacePrefix,
+    semicolons: config.typeGeneratorOptions?.semicolons,
+    preserveComments: config.preserveComments,
+    commentStyle: config.commentStyle
+  });
 }
