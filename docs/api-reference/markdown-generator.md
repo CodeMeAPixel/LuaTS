@@ -124,5 +124,5 @@ The generated Markdown includes:
 
 ## See Also
 
-- [LuaTS TypeScript Generator](./api-typescript-generator.md)
-- [API Reference](./api-reference.md)
+- [Type Generator](./type-generator.md)
+- [API Reference](../api-reference.md)

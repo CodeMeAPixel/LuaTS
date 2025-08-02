@@ -15,7 +15,12 @@ export class TypeGenerator {
   private functions: Map<string, TypeScriptFunction>;
 
   constructor(options: TypeGeneratorOptions = {}) {
-    this.options = options;
+    this.options = {
+      useUnknown: options.useUnknown === true,
+      interfacePrefix: options.interfacePrefix || '',
+      semicolons: options.semicolons !== false,
+      ...options
+    };
     this.interfaces = new Map();
     this.types = new Map();
     this.functions = new Map();
@@ -253,7 +258,14 @@ export class TypeGenerator {
         }
         return typeNode.name;
       case 'UnionType':
-        return typeNode.types.map((t: any) => this.getTypeString(t)).join(' | ');
+        // Handle special case of union with object literals
+        return typeNode.types.map((t: any) => {
+          // For table types in unions, wrap them in parentheses to avoid syntax errors
+          if (t.type === 'TableType') {
+            return `(${this.getTypeString(t)})`;
+          }
+          return this.getTypeString(t);
+        }).join(' | ');
       case 'IntersectionType':
         return typeNode.types.map((t: any) => this.getTypeString(t)).join(' & ');
       case 'FunctionType': {
@@ -305,18 +317,24 @@ export class TypeGenerator {
     let ast: any;
     if (typeof codeOrAst === 'string') {
       try {
-        const { LuauParser } = require('../parsers/luau');
-        ast = new LuauParser().parse(codeOrAst);
-      } catch {
-        ast = { type: 'Program', body: [] };
-      }
-    } else {
-      ast = codeOrAst;
-    }
-    this.interfaces.clear();
-    this.types.clear();
-    this.functions.clear();
-    this.processNode(ast);
-    return this.generateCode();
+        const { LuauParser } = require('../../parsers/luau');
+        const parser = new LuauParser();
+        ast = parser.parse(codeOrAst);
+      } catch (error) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}  }    return this.generateCode();    this.processNode(ast);    this.functions.clear();    this.types.clear();    this.interfaces.clear();    }      ast = codeOrAst;    } else {      }        ast = { type: 'Program', body: [] };        console.error('Error parsing code:', error);    return this.generate(ast);
   }
 }

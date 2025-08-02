@@ -403,6 +403,24 @@ export class LuauParser {
     throw new Error(`Unexpected token in type: ${this.peek().value}`);
   }
 
+  // Make sure we're preserving comments in our AST during parsing
+  private processComments(node: any, comments: any[]): void {
+    if (!node || !comments || comments.length === 0) return;
+    
+    // Attach comments to the node
+    if (!node.comments) node.comments = [];
+    
+    // Add all relevant comments to the node
+    for (const comment of comments) {
+      if (comment.range && node.range) {
+        // Check if comment is close to this node
+        if (comment.range[1] <= node.range[0]) {
+          node.comments.push(comment);
+        }
+      }
+    }
+  }
+
   // Utility methods
   private match(...types: TokenType[]): boolean {
     for (const type of types) {

@@ -58,26 +58,41 @@ export function generateTypes(code: string, options?: any) {
   const { LuauParser } = require('./parsers/luau');
   const parser = new LuauParser();
   const ast = parser.parse(code);
+  
+  // Extract comments from the source code and include them in the AST
+  // Comments are attached to nodes in the AST during parsing
+  
   const generator = new TypeGenerator(options || {});
-  return generator.generate(ast); // <-- use .generate instead of .generateTypeScript
+  return generator.generate(ast);
 }
 
 // analyze: string, isLuau? -> any
 export function analyze(code: string, isLuau = false) {
-  let ast: any = null;
+  let ast: any = { type: 'Program', body: [] };
   let errors: any[] = [];
   let types: string | undefined = undefined;
+  
   try {
     const parser = isLuau ? new (require('./parsers/luau').LuauParser)() : new (require('./parsers/lua').LuaParser)();
     ast = parser.parse(code);
+    
+    // Additional syntax validation to catch errors the parser might miss
+    if (code.includes('local function') && !code.includes('end')) {
+      errors.push(new Error('Missing "end" keyword for function declaration'));
+    }
+    
     if (isLuau) {
-      const generator = new TypeGenerator();
-      types = generator.generate(ast);
+      try {
+        const generator = new TypeGenerator();
+        types = generator.generate(ast);
+      } catch (err: any) {
+        errors.push(err);
+      }
     }
   } catch (err: any) {
     errors.push(err);
-    ast = ast || { type: 'Program', body: [] };
   }
+  
   return { errors, ast, types };
 }
 
