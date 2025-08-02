@@ -2,12 +2,18 @@ import { TypeScriptParameter } from './types';
 
 export function formatComments(comments: any[]): string {
   if (!comments || comments.length === 0) return '';
-  if (comments.length === 1) {
+  // If any comment is a block, treat as multi-line JSDoc
+  if (comments.length === 1 && comments[0].type !== 'Block') {
     return `/** ${comments[0].value.trim()} */`;
   } else {
     return [
       '/**',
-      ...comments.map((c: any) => ` * ${c.value.trim()}`),
+      ...comments.map((c: any) =>
+        c.value
+          .split('\n')
+          .map((line: string) => ` * ${line.trim()}`)
+          .join('\n')
+      ),
       ' */'
     ].join('\n');
   }

@@ -47,7 +47,7 @@ export class TypeGenerator {
       } else if (node.name && node.definition) {
         name = node.name.name || node.name;
         value = node.definition;
-        comments = node.comments;
+        comments = node.comments || node.comments;
       } else {
         return;
       }
@@ -78,13 +78,17 @@ export class TypeGenerator {
           return !(idx === 0 && n === 'self');
         }).map((p: any) => {
           const n = p.name?.name || p.name;
-          const t = p.typeAnnotation ? this.getTypeString(p.typeAnnotation.typeAnnotation) : (this.options.useUnknown ? 'unknown' : 'any');
+          const t = p.typeAnnotation
+            ? this.getTypeString(p.typeAnnotation.typeAnnotation)
+            : (this.options.useUnknown ? 'unknown' : 'any');
           return `${n}: ${t}`;
         });
-        // Fix: If returnType is missing, use 'any' or 'unknown' (not 'void')
-        const ret = value.returnType
-          ? this.getTypeString(value.returnType)
-          : (this.options.useUnknown ? 'unknown' : 'any');
+        let ret: string;
+        if (value.returnType) {
+          ret = this.getTypeString(value.returnType);
+        } else {
+          ret = this.options.useUnknown ? 'unknown' : 'any';
+        }
         const tsType: TypeScriptType = {
           name,
           type: `(${params.join(', ')}) => ${ret}`,
@@ -107,6 +111,7 @@ export class TypeGenerator {
               name: field.name?.name || field.key || '',
               type: this.getTypeString(field.valueType),
               optional: field.optional || false,
+              // Attach field comments if present
               description: field.comments ? formatComments(field.comments) : undefined
             };
             tsInterface.properties.push(property);
@@ -245,20 +250,23 @@ export class TypeGenerator {
       case 'IntersectionType':
         return typeNode.types.map((t: any) => this.getTypeString(t)).join(' & ');
       case 'FunctionType': {
-        // Remove 'self' parameter if present
         const params = (typeNode.parameters || []).filter((p: any, idx: number) => {
           const n = p.name?.name || p.name;
-          // Remove 'self' if it's the first parameter (method)
           return !(idx === 0 && n === 'self');
         }).map((p: any) => {
           const n = p.name?.name || p.name;
-          const t = p.typeAnnotation ? this.getTypeString(p.typeAnnotation.typeAnnotation) : (this.options.useUnknown ? 'unknown' : 'any');
+          const t = p.typeAnnotation
+            ? this.getTypeString(p.typeAnnotation.typeAnnotation)
+            : (this.options.useUnknown ? 'unknown' : 'any');
           return `${n}: ${t}`;
         });
-        // Fix: If returnType is missing, use 'any' or 'unknown' (not 'void')
-        const ret = typeNode.returnType
-          ? this.getTypeString(typeNode.returnType)
-          : (this.options.useUnknown ? 'unknown' : 'any');
+        // Fix: Only use 'any'/'unknown' if returnType is truly missing
+        let ret: string;
+        if (typeNode.returnType) {
+          ret = this.getTypeString(typeNode.returnType);
+        } else {
+          ret = this.options.useUnknown ? 'unknown' : 'any';
+        }
         return `(${params.join(', ')}) => ${ret}`;
       }
       case 'TableType': {

@@ -19,11 +19,15 @@ export class LuauParser {
 
     while (!this.isAtEnd()) {
       // Collect comments before the statement
-      while (this.check(TokenType.COMMENT)) {
+      while (this.check(TokenType.COMMENT) || this.check(TokenType.MULTILINE_COMMENT)) {
         const commentToken = this.advance();
         pendingComments.push({
-          value: commentToken.value.replace(/^--+/, '').trim(),
-          type: 'Line'
+          value: commentToken.value
+            .replace(/^--+/, '') // Remove leading --
+            .replace(/^\[=*?\[/, '') // Remove opening [[ or [=[ etc
+            .replace(/\]=*?\]$/, '') // Remove closing ]] or ]=]
+            .trim(),
+          type: commentToken.type === TokenType.MULTILINE_COMMENT ? 'Block' : 'Line'
         });
       }
 
@@ -262,18 +266,23 @@ export class LuauParser {
       }
       this.consume(TokenType.RIGHT_PAREN, "Expected ')' after function parameters");
 
-      // Always check for return type, but do not default to void/any here
-      let returnType: AST.LuauType | undefined = undefined;
-      if (this.match(TokenType.COLON)) {
-        returnType = this.parseType();
+      // Fix: Always require '->' and a return type for function types
+      if (this.match(TokenType.MINUS) && this.match(TokenType.GREATER_THAN)) {
+        const returnType = this.parseType();
+        return {
+          type: 'FunctionType',
+          parameters,
+          returnType,
+          location: this.getLocation(),
+        };
+      } else {
+        // If no '->', treat as a parenthesized type, not a function type
+        if (parameters.length === 1 && parameters[0].typeAnnotation?.typeAnnotation) {
+          // Single type in parens, return the type annotation
+          return parameters[0].typeAnnotation.typeAnnotation;
+        }
+        throw new ParseError("Expected '->' and return type after function parameters", this.peek());
       }
-
-      return {
-        type: 'FunctionType',
-        parameters,
-        returnType,
-        location: this.getLocation(),
-      };
     }
     
     // Table type

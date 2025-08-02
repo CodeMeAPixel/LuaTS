@@ -1,9 +1,5 @@
 # Bun configuration file
 
-[test]
-# Test configuration
-coverage = false
-
 [install]
 # Package installation configuration
 registry = "https://registry.npmjs.org/"

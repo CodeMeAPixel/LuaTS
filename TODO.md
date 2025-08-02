@@ -48,3 +48,4 @@
 - [ ] **Support for monorepo setups and workspace-aware config**
 - [ ] **Add support for extern types/classes (typically ending in a .d.lua file)**
 - [ ] **Add ability to reverse logic (ie: transform typescript into lua)**
+- [ ] **Add support for generating types for lua/luau `local function`**

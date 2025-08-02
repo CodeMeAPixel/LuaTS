@@ -62,3 +62,6 @@ Use the debug scripts in this directory for troubleshooting:
 - `debug/test-hanging.ts`: Tests for parser edge cases
 - `debug/test-multiple.ts`: Tests for multiple type definitions
 - `debug/test-demo-structure.ts`: Tests for the demo code structure
+
+<!-- TEST_RESULTS_START -->
+<!-- TEST_RESULTS_END -->

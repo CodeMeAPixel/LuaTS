@@ -5,6 +5,7 @@ examples/
 docs/
 .github/
 coverage/
+test/
 .vscode/
 .idea/
 .git/
