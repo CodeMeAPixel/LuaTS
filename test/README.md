@@ -82,6 +82,8 @@ Use the debug scripts in this directory for troubleshooting:
 
 
 
+
+
 <!-- TEST_RESULTS_START -->
 ## Test Results
 
@@ -105,15 +107,20 @@ Use the debug scripts in this directory for troubleshooting:
 | test\features.test.ts > Convert function types | ✅ Pass |
 | test\features.test.ts > Convert method types | ✅ Pass |
 | test\features.test.ts > Convert union types | ✅ Pass |
-| test\features.test.ts > Preserve single-line comments | ❌ Fail |
-| test\features.test.ts > Preserve multi-line comments | ❌ Fail |
-| test\features.test.ts > Handle syntax errors | ❌ Fail |
+| test\features.test.ts > Preserve single-line comments | ✅ Pass |
+| test\features.test.ts > Preserve multi-line comments | ✅ Pass |
+| test\features.test.ts > Handle syntax errors | ✅ Pass |
 | test\features.test.ts > Handle type errors | ✅ Pass |
+| test\features.test.ts > Handle string interpolation | ✅ Pass |
+| test\features.test.ts > Handle continue statements | ✅ Pass |
+| test\features.test.ts > Handle continue statements with proper context validation | ✅ Pass |
+| test\features.test.ts > Handle reserved keywords as property names | ✅ Pass |
 | test\features.test.ts > Apply plugin transforms | ✅ Pass |
 | test\types.test.ts > Convert nested complex types | ✅ Pass |
 | test\types.test.ts > Convert array of custom types | ✅ Pass |
 | test\types.test.ts > Convert optional nested types | ✅ Pass |
-| test\types.test.ts > Convert union types with object literals | ❌ Fail |
+| test\types.test.ts > Convert union types with object literals | ✅ Pass |
+| test\types.test.ts > Convert union types with object literals and intersection | ✅ Pass |
 | test\types.test.ts > Convert function with multiple parameters | ✅ Pass |
 | test\types.test.ts > Handle recursive types | ✅ Pass |
 | test\types.test.ts > Convert generic types | ✅ Pass |
@@ -122,12 +129,14 @@ Use the debug scripts in this directory for troubleshooting:
 | test\types.test.ts > Prefix interface names | ✅ Pass |
 | test\types.test.ts > Generate semicolons based on option | ✅ Pass |
 | test\snapshots.test.ts > Basic types snapshot | ✅ Pass |
-| test\snapshots.test.ts > Game types snapshot | ❌ Fail |
+| test\snapshots.test.ts > Game types snapshot | ✅ Pass |
 | test\plugins.test.ts > Plugin can transform types | ✅ Pass |
 | test\plugins.test.ts > Can use plugin object directly | ✅ Pass |
-| test\cli.test.ts > Convert a single file | ❌ Fail |
-| test\cli.test.ts > Convert a directory | ❌ Fail |
-| test\cli.test.ts > Validate a file | ❌ Fail |
-| test\cli.test.ts > Use config file | ❌ Fail |
-| **Total** | 33 / 42 passed |
+| test\plugins.test.ts > Plugin can modify generated code | ✅ Pass |
+| test\plugins.test.ts > Multiple plugins work together | ✅ Pass |
+| test\cli.test.ts > Convert a single file | ✅ Pass |
+| test\cli.test.ts > Convert a directory | ✅ Pass |
+| test\cli.test.ts > Validate a file | ✅ Pass |
+| test\cli.test.ts > Use config file | ✅ Pass |
+| **Total** | 49 / 49 passed |
 <!-- TEST_RESULTS_END -->
