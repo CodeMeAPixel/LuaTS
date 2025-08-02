@@ -10,7 +10,7 @@ export type { Plugin } from './plugins/plugin-system';
 export { loadPlugin, loadPlugins, applyPlugins, generateTypesWithPlugins } from './plugins/plugin-system';
 
 // Export type generator
-export type { TypeGeneratorOptions } from './generators';
+export type { TypeGeneratorOptions } from './generators/typescript/types';
 export { TypeGenerator } from './generators';
 
 // Export parsers
@@ -31,9 +31,9 @@ export * as AST from './types';
 // Convenience functions
 import { LuaParser } from './parsers/lua';
 import { LuauParser } from './parsers/luau';
-// If you have these, import them as well:
 import { LuaFormatter } from './clients/formatter';
-import { TypeGenerator } from './generators';
+import { TypeGenerator } from './generators/typescript/generator';
+import type { TypeGeneratorOptions } from './generators/typescript/types';
 
 // parseLua: string -> AST.Program
 export function parseLua(code: string) {
@@ -53,17 +53,15 @@ export function formatLua(ast: any) {
   return formatter.format(ast);
 }
 
-// generateTypes: string -> string
-export function generateTypes(code: string, options?: any) {
-  const { LuauParser } = require('./parsers/luau');
-  const parser = new LuauParser();
-  const ast = parser.parse(code);
-  
-  // Extract comments from the source code and include them in the AST
-  // Comments are attached to nodes in the AST during parsing
-  
-  const generator = new TypeGenerator(options || {});
-  return generator.generate(ast);
+// /**
+//  * Generate TypeScript types from Lua/Luau code
+//  * @param code The Lua/Luau code to generate types from
+//  * @param options Options for the type generator
+//  * @returns Generated TypeScript code
+//  */
+export function generateTypes(code: string, options: TypeGeneratorOptions = {}): string {
+  const generator = new TypeGenerator(options);
+  return generator.generateTypeScript(code);
 }
 
 // analyze: string, isLuau? -> any
@@ -76,9 +74,23 @@ export function analyze(code: string, isLuau = false) {
     const parser = isLuau ? new (require('./parsers/luau').LuauParser)() : new (require('./parsers/lua').LuaParser)();
     ast = parser.parse(code);
     
-    // Additional syntax validation to catch errors the parser might miss
+    // Improved syntax validation to catch errors the parser might miss
     if (code.includes('local function') && !code.includes('end')) {
       errors.push(new Error('Missing "end" keyword for function declaration'));
+    }
+    
+    // Check for mismatched parentheses
+    const openParens = (code.match(/\(/g) || []).length;
+    const closeParens = (code.match(/\)/g) || []).length;
+    if (openParens !== closeParens) {
+      errors.push(new Error(`Mismatched parentheses: ${openParens} opening vs ${closeParens} closing`));
+    }
+    
+    // Check for mismatched curly braces
+    const openBraces = (code.match(/\{/g) || []).length;
+    const closeBraces = (code.match(/\}/g) || []).length;
+    if (openBraces !== closeBraces) {
+      errors.push(new Error(`Mismatched curly braces: ${openBraces} opening vs ${closeBraces} closing`));
     }
     
     if (isLuau) {

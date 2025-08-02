@@ -205,6 +205,7 @@ export type LuauType =
   | IntersectionType
   | FunctionType
   | TableType
+  | ArrayType
   | GenericType;
 
 export interface StringType extends ASTNode {
@@ -273,4 +274,9 @@ export interface TypeAlias extends ASTNode {
   name: Identifier;
   typeParameters: string[] | undefined;
   definition: LuauType;
+}
+
+export interface ArrayType extends ASTNode {
+  type: 'ArrayType';
+  elementType: LuauType;
 }

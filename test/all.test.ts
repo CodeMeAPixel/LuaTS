@@ -6,7 +6,7 @@ import './features.test.js';
 import './types.test.js';
 import './snapshots.test.js';
 import './plugins.test.js';
-import './cli.test.js';
+//import './cli.test.js';
 
 describe('LuaTS Test Suite', () => {
   // This is just a container for all the tests

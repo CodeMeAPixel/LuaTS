@@ -80,6 +80,8 @@ Use the debug scripts in this directory for troubleshooting:
 
 
 
+
+
 <!-- TEST_RESULTS_START -->
 ## Test Results
 
@@ -116,9 +118,9 @@ Use the debug scripts in this directory for troubleshooting:
 | test\types.test.ts > Handle recursive types | ✅ Pass |
 | test\types.test.ts > Convert generic types | ✅ Pass |
 | test\types.test.ts > Convert indexed access types | ✅ Pass |
-| test\types.test.ts > Use unknown instead of any | ❌ Fail |
-| test\types.test.ts > Prefix interface names | ❌ Fail |
-| test\types.test.ts > Generate semicolons based on option | ❌ Fail |
+| test\types.test.ts > Use unknown instead of any | ✅ Pass |
+| test\types.test.ts > Prefix interface names | ✅ Pass |
+| test\types.test.ts > Generate semicolons based on option | ✅ Pass |
 | test\snapshots.test.ts > Basic types snapshot | ✅ Pass |
 | test\snapshots.test.ts > Game types snapshot | ❌ Fail |
 | test\plugins.test.ts > Plugin can transform types | ✅ Pass |
@@ -127,5 +129,5 @@ Use the debug scripts in this directory for troubleshooting:
 | test\cli.test.ts > Convert a directory | ❌ Fail |
 | test\cli.test.ts > Validate a file | ❌ Fail |
 | test\cli.test.ts > Use config file | ❌ Fail |
-| **Total** | 30 / 42 passed |
+| **Total** | 33 / 42 passed |
 <!-- TEST_RESULTS_END -->

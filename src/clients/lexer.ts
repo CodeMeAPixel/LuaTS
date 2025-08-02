@@ -132,16 +132,17 @@ export class Lexer {
     this.input = input;
   }
 
-  public tokenize(): Token[] {
+  public tokenize(input: string): Token[] {
+    this.input = input;
+    this.position = 0;
+    this.line = 1;
+    this.column = 1;
+    
     const tokens: Token[] = [];
     
     while (!this.isAtEnd()) {
       const token = this.nextToken();
-      if (
-        token.type !== TokenType.WHITESPACE &&
-        token.type !== TokenType.COMMENT &&
-        token.type !== TokenType.MULTILINE_COMMENT
-      ) {
+      if (token.type !== TokenType.WHITESPACE) {
         tokens.push(token);
       }
     }

@@ -124,5 +124,5 @@ The generated Markdown includes:
 
 ## See Also
 
-- [Type Generator](./type-generator.md)
-- [API Reference](../api-reference.md)
+- [Type Generator](./type-generator)
+- [API Reference](./api-reference)

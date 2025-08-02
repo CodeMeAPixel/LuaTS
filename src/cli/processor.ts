@@ -19,9 +19,9 @@ export async function processFile(
     // Generate TypeScript code with proper options
     const tsCode = await generateTypeScript(luaCode, {
       ...config.typeGeneratorOptions,
-      // Fix: Pass the properties directly from typeGeneratorOptions or use defaults
+      // Fix: Pass only valid TypeGeneratorOptions properties
       preserveComments: config.preserveComments ?? true,
-      commentStyle: config.commentStyle ?? 'jsdoc'
+      // Remove commentStyle as it's not part of TypeGeneratorOptions
     });
     
     // Ensure output directory exists
@@ -83,7 +83,7 @@ export async function processDirectory(
  */
 async function generateTypeScript(
   luaCode: string, 
-  config: any // Change type to 'any' temporarily to fix the error
+  config: any
 ): Promise<string> {
   // Use the real generator with all options passed
   return generateTypes(luaCode, {
@@ -91,6 +91,7 @@ async function generateTypeScript(
     interfacePrefix: config.typeGeneratorOptions?.interfacePrefix,
     semicolons: config.typeGeneratorOptions?.semicolons,
     preserveComments: config.preserveComments,
-    commentStyle: config.commentStyle
+    generateComments: config.typeGeneratorOptions?.generateComments,
+    commentStyle: config.typeGeneratorOptions?.commentStyle
   });
 }

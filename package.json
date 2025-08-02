@@ -58,8 +58,8 @@
     "format": "prettier --write src/**/*.ts",
     "prepublishOnly": "bun run build",
     "test": "bun test",
-    "test:report": "bun test --reporter=junit --reporter-outfile=./test/junit.xml && bun run scripts/test-report-junit.ts",
-    "test:coverage": "bun test --coverage --reporter=junit --reporter-outfile=./test/junit.xml && bun run scripts/test-report-junit.ts"
+    "test:report": "bun run scripts/test-report.ts",
+    "test:coverage": "bun test --reporter=junit --reporter-outfile=./test/junit.xml"
   },
   "keywords": [
     "lua",

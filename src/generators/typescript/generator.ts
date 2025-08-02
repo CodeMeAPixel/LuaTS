@@ -1,340 +1,250 @@
-import { formatComments } from './utils';
-
-import {
-  TypeScriptInterface,
-  TypeScriptProperty,
-  TypeScriptType,
-  TypeScriptFunction,
-  TypeGeneratorOptions
-} from './types';
+import { TypeGeneratorOptions } from './types';
 
 export class TypeGenerator {
   private options: TypeGeneratorOptions;
-  private interfaces: Map<string, TypeScriptInterface>;
-  private types: Map<string, TypeScriptType>;
-  private functions: Map<string, TypeScriptFunction>;
+  private interfaces = new Map<string, any>();
+  private types = new Map<string, any>();
 
   constructor(options: TypeGeneratorOptions = {}) {
     this.options = {
-      useUnknown: options.useUnknown === true,
-      interfacePrefix: options.interfacePrefix || '',
-      semicolons: options.semicolons !== false,
+      useUnknown: false,
+      interfacePrefix: '',
+      includeSemicolons: options.semicolons ?? options.includeSemicolons ?? true,
+      preserveComments: true,
       ...options
     };
-    this.interfaces = new Map();
-    this.types = new Map();
-    this.functions = new Map();
   }
 
-  public generate(ast: any): string {
-    this.interfaces.clear();
-    this.types.clear();
-    this.functions.clear();
-    this.processNode(ast);
-    return this.generateCode();
+  public generateTypeScript(code: string): string {
+    try {
+      // Parse the Luau code
+      const { LuauParser } = require('../../parsers/luau');
+      const parser = new LuauParser();
+      const ast = parser.parse(code);
+      
+      // Clear previous results
+      this.interfaces.clear();
+      this.types.clear();
+      
+      // Process the AST
+      this.processAST(ast);
+      
+      // Generate TypeScript code
+      return this.generateCode();
+    } catch (error) {
+      console.error('Error parsing code:', error);
+      return '';
+    }
   }
 
-  private processNode(node: any): void {
-    if (!node) return;
-    if (Array.isArray(node.body)) {
-      for (const child of node.body) {
-        this.processNode(child);
+  private processAST(ast: any): void {
+    if (!ast || !ast.body) return;
+    
+    for (const statement of ast.body) {
+      if (statement.type === 'TypeAlias') {
+        this.processTypeAlias(statement);
       }
     }
-    if (node.type === 'TypeAlias') {
-      let name: string | undefined;
-      let value: any;
-      let comments: any[] | undefined;
-      if (node.id && node.value) {
-        name = node.id.name;
-        value = node.value;
-        comments = node.comments;
-      } else if (node.name && node.definition) {
-        name = node.name.name || node.name;
-        value = node.definition;
-        // Prefer node.comments, fallback to node.definition.comments
-        comments = node.comments || (node.definition ? node.definition.comments : undefined);
-      } else {
-        return;
-      }
-      if (typeof name !== 'string') return;
-
-      // Process comments for the type alias
-      const commentStr = comments && comments.length > 0 ? 
-        formatComments(comments) : undefined;
-
-      // --- Handle Record types as type aliases ---
-      if (
-        value.type === 'TableType' &&
-        value.fields &&
-        value.fields.length === 1 &&
-        (value.fields[0].key === 'string' || value.fields[0].key === 'number')
-      ) {
-        const keyType = value.fields[0].key === 'string' ? 'string' : 'number';
-        const tsType: TypeScriptType = {
-          name,
-          type: `Record<${keyType}, ${this.getTypeString(value.fields[0].valueType)}>`,
-
-          description: commentStr
-        };
-        this.types.set(name, tsType);
-        return;
-      }
-
-      // --- Handle function type aliases as type ---
-      if (value.type === 'FunctionType') {
-        const params = (value.parameters || []).filter((p: any, idx: number) => {
-          const n = p.name?.name || p.name;
-          return !(idx === 0 && n === 'self');
-        }).map((p: any) => {
-          const n = p.name?.name || p.name;
-          const t = p.typeAnnotation
-            ? this.getTypeString(p.typeAnnotation.typeAnnotation)
-            : (this.options.useUnknown ? 'unknown' : 'any');
-          return `${n}: ${t}`;
-        });
-        let ret: string;
-        if (value.returnType) {
-          ret = this.getTypeString(value.returnType);
-        } else {
-          ret = this.options.useUnknown ? 'unknown' : 'any';
-        }
-        const tsType: TypeScriptType = {
-          name,
-          type: `(${params.join(', ')}) => ${ret}`,
-          description: commentStr
-        };
-        this.types.set(name, tsType);
-        return;
-      }
-
-      // --- Handle normal interfaces ---
-      if (value.type === 'TableType') {
-        const tsInterface: TypeScriptInterface = {
-          name,
-          properties: [],
-          description: commentStr
-        };
-        if (value.fields) {
-          for (const field of value.fields) {
-            // Extract field-level comments if present
-            const fieldComments = field.comments ? formatComments(field.comments) : undefined;
-            
-            const property: TypeScriptProperty = {
-              name: field.name?.name || field.key || '',
-              type: this.getTypeString(field.valueType),
-              optional: field.optional || false,
-              description: fieldComments
-            };
-            tsInterface.properties.push(property);
-          }
-        }
-        this.interfaces.set(name, tsInterface);
-        return;
-      }
-
-      // --- Handle union types ---
-      if (value.type === 'UnionType') {
-        const tsType: TypeScriptType = {
-          name,
-          type: this.getTypeString(value),
-          description: commentStr
-        };
-        this.types.set(name, tsType);
-        return;
-      }
-
-      // --- Handle simple type aliases ---
-      const tsType: TypeScriptType = {
-        name,
-        type: this.getTypeString(value),
-        description: commentStr
-      };
-      this.types.set(name, tsType);
-    }
   }
 
-  private generateCode(): string {
-    let code = '';
-    for (const tsInterface of this.interfaces.values()) {
-      // Only output interface if it has properties
-      if (tsInterface.properties.length > 0) {
-        code += this.generateInterface(tsInterface);
-        code += '\n\n';
-      }
-    }
-    for (const tsType of this.types.values()) {
-      code += this.generateType(tsType);
-      code += '\n\n';
-    }
-    for (const tsFunction of this.functions.values()) {
-      code += this.generateFunctionType(tsFunction);
-      code += '\n\n';
-    }
-    return code.trim();
-  }
-
-  private generateInterface(tsInterface: TypeScriptInterface): string {
-    let code = '';
-    // Output interface description as JSDoc if present
-    if (tsInterface.description) {
-      code += `${tsInterface.description}\n`;
-    }
-    let interfaceName = tsInterface.name;
-    if (this.options.interfacePrefix && !interfaceName.startsWith(this.options.interfacePrefix)) {
-      interfaceName = `${this.options.interfacePrefix}${interfaceName}`;
-    }
-    code += `interface ${interfaceName}`;
-    if (tsInterface.extends && tsInterface.extends.length > 0) {
-      code += ` extends ${tsInterface.extends.join(', ')}`;
-    }
-    code += ' {\n';
-    for (const property of tsInterface.properties) {
-      // Output property description as JSDoc if present
-      if (property.description) {
-        code += `  ${property.description}\n`;
-      }
-      code += `  ${property.name}${property.optional ? '?' : ''}: ${property.type}`;
-      if (this.options.semicolons !== false) {
-        code += ';';
-      }
-      code += '\n';
-    }
-    code += '}';
-    return code;
-  }
-
-  private generateType(tsType: TypeScriptType): string {
-    let code = '';
-    // Output type description as JSDoc if present
-    if (tsType.description) {
-      code += `${tsType.description}\n`;
-    }
-    code += `type ${tsType.name} = ${tsType.type}`;
-    if (this.options.semicolons !== false) {
-      code += ';';
-    }
-    return code;
-  }
-
-  private generateFunctionType(tsFunction: TypeScriptFunction): string {
-    let code = '';
-    if (tsFunction.description) {
-      code += `${tsFunction.description}\n`;
-    }
-    const params = tsFunction.parameters.map(param =>
-      `${param.name}${param.optional ? '?' : ''}: ${param.type}`
-    ).join(', ');
-    code += `type ${tsFunction.name} = (${params}) => ${tsFunction.returnType}`;
-    if (this.options.semicolons !== false) {
-      code += ';';
-    }
-    return code;
-  }
-
-  public addInterface(tsInterface: TypeScriptInterface): void {
-    this.interfaces.set(tsInterface.name, tsInterface);
-  }
-
-  public getInterface(name: string): TypeScriptInterface | undefined {
-    return this.interfaces.get(name);
-  }
-
-  public getAllInterfaces(): TypeScriptInterface[] {
-    return Array.from(this.interfaces.values());
-  }
-
-  private getTypeString(typeNode: any): string {
-    if (!typeNode) return this.options.useUnknown ? 'unknown' : 'any';
-    switch (typeNode.type) {
-      case 'StringType': return 'string';
-      case 'NumberType': return 'number';
-      case 'BooleanType': return 'boolean';
-      case 'NilType': return 'null';
-      case 'AnyType': return this.options.useUnknown ? 'unknown' : 'any';
-      case 'GenericType':
-        if (typeNode.typeParameters && typeNode.typeParameters.length > 0) {
-          return `${typeNode.name}<${typeNode.typeParameters.map((t: any) => this.getTypeString(t)).join(', ')}>`;
-        }
-        return typeNode.name;
+  private convertType(type: any): string {
+    if (!type) return this.options.useUnknown ? 'unknown' : 'any';
+    
+    switch (type.type) {
+      case 'StringType':
+        return 'string';
+      case 'NumberType':
+        return 'number';
+      case 'BooleanType':
+        return 'boolean';
+      case 'NilType':
+        return 'null';
+      case 'AnyType':
+        return this.options.useUnknown ? 'unknown' : 'any';
+      case 'ArrayType':
+        return `${this.convertType(type.elementType)}[]`;
       case 'UnionType':
-        // Handle special case of union with object literals
-        return typeNode.types.map((t: any) => {
-          // For table types in unions, wrap them in parentheses to avoid syntax errors
-          if (t.type === 'TableType') {
-            return `(${this.getTypeString(t)})`;
+        return type.types.map((t: any) => this.convertType(t)).join(' | ');
+      case 'FunctionType':
+        // Filter out 'self' parameter for method types
+        const params = type.parameters?.filter((p: any) => p.name.name !== 'self')
+          .map((p: any) => 
+            `${p.name.name}: ${this.convertType(p.typeAnnotation?.typeAnnotation)}`
+          ).join(', ') || '';
+        const returnType = this.convertType(type.returnType);
+        return `(${params}) => ${returnType}`;
+      case 'GenericType':
+        // Handle string literals (keep quotes) and type references
+        if (type.name.startsWith('"') && type.name.endsWith('"')) {
+          return type.name; // Keep string literals as-is
+        }
+        if (type.name === 'string' || type.name === 'number' || type.name === 'boolean') {
+          return type.name;
+        }
+        // For other identifiers, return as-is (these are type references)
+        return type.name;
+      case 'TableType':
+        if (type.properties?.length === 1 && type.properties[0].type === 'IndexSignature') {
+          const prop = type.properties[0];
+          const keyType = this.convertType(prop.keyType);
+          const valueType = this.convertType(prop.valueType);
+          return `Record<${keyType}, ${valueType}>`;
+        }
+        // Inline object type
+        const props = type.properties?.map((p: any) => {
+          if (p.type === 'PropertySignature') {
+            const optional = p.optional ? '?' : '';
+            return `${p.key.name}${optional}: ${this.convertType(p.typeAnnotation)}`;
           }
-          return this.getTypeString(t);
-        }).join(' | ');
-      case 'IntersectionType':
-        return typeNode.types.map((t: any) => this.getTypeString(t)).join(' & ');
-      case 'FunctionType': {
-        const params = (typeNode.parameters || []).filter((p: any, idx: number) => {
-          const n = p.name?.name || p.name;
-          return !(idx === 0 && n === 'self');
-        }).map((p: any) => {
-          const n = p.name?.name || p.name;
-          const t = p.typeAnnotation
-            ? this.getTypeString(p.typeAnnotation.typeAnnotation)
-            : (this.options.useUnknown ? 'unknown' : 'any');
-          return `${n}: ${t}`;
-        });
-        // Fix: Only use 'any'/'unknown' if returnType is truly missing
-        let ret: string;
-        if (typeNode.returnType) {
-          ret = this.getTypeString(typeNode.returnType);
-        } else {
-          ret = this.options.useUnknown ? 'unknown' : 'any';
-        }
-        return `(${params.join(', ')}) => ${ret}`;
-      }
-      case 'TableType': {
-        // Array: {T}
-        if (typeNode.fields.length === 1 && typeNode.fields[0].key === 1) {
-          return this.getTypeString(typeNode.fields[0].valueType) + '[]';
-        }
-        // Record: {[string]: T} or {[number]: T}
-        if (
-          typeNode.fields.length === 1 &&
-          typeNode.fields[0].key !== undefined &&
-          (typeNode.fields[0].key === 'string' || typeNode.fields[0].key === 'number')
-        ) {
-          const keyType = typeNode.fields[0].key === 'string' ? 'string' : 'number';
-          return `Record<${keyType}, ${this.getTypeString(typeNode.fields[0].valueType)}>`;
-        }
-        // Object
-        return '{ ' + typeNode.fields.map((f: any) =>
-          `${f.key}${f.optional ? '?' : ''}: ${this.getTypeString(f.valueType)}`
-        ).join(', ') + ' }';
-      }
+          return '';
+        }).filter(Boolean).join(', ') || '';
+        return `{ ${props} }`;
       default:
         return this.options.useUnknown ? 'unknown' : 'any';
     }
   }
 
-  // For test compatibility: generate TypeScript from code or AST.
-  public generateTypeScript(codeOrAst: string | any): string {
-    let ast: any;
-    if (typeof codeOrAst === 'string') {
-      try {
-        const { LuauParser } = require('../../parsers/luau');
-        const parser = new LuauParser();
-        ast = parser.parse(codeOrAst);
-      } catch (error) {
+  private processTypeAlias(typeAlias: any): void {
+    const name = typeAlias.name.name;
+    const definition = typeAlias.definition;
+    
+    // Always create type aliases for union types, not interfaces
+    if (definition.type === 'UnionType') {
+      this.types.set(name, {
+        name,
+        type: this.convertType(definition),
+        description: typeAlias.description,
+        comments: typeAlias.comments
+      });
+    } else if (definition.type === 'TableType') {
+      // Convert table type to interface
+      const properties: any[] = [];
+      
+      if (definition.properties) {
+        for (const prop of definition.properties) {
+          if (prop.type === 'PropertySignature') {
+            properties.push({
+              name: prop.key.name,
+              type: this.convertType(prop.typeAnnotation),
+              optional: prop.optional || false,
+              description: prop.description,
+              comments: prop.comments
+            });
+          } else if (prop.type === 'IndexSignature') {
+            // Handle index signatures like [string]: number
+            const keyType = this.convertType(prop.keyType);
+            const valueType = this.convertType(prop.valueType);
+            properties.push({
+              name: `[key: ${keyType}]`,
+              type: valueType,
+              optional: false,
+              isIndexSignature: true
+            });
+          }
+        }
+      }
+      
+      this.interfaces.set(name, {
+        name: this.options.interfacePrefix + name,
+        properties,
+        description: typeAlias.description,
+        comments: typeAlias.comments
+      });
+    } else {
+      // Convert other types to type aliases
+      this.types.set(name, {
+        name,
+        type: this.convertType(definition),
+        description: typeAlias.description,
+        comments: typeAlias.comments
+      });
+    }
+  }
 
+  private generateCode(): string {
+    const parts: string[] = [];
+    
+    // Generate interfaces
+    for (const [, iface] of this.interfaces) {
+      let code = '';
+      
+      // Add comments if present
+      if (iface.comments?.length) {
+        code += this.formatComments(iface.comments);
+      } else if (iface.description) {
+        code += `/**\n * ${iface.description}\n */\n`;
+      }
+      
+      code += `interface ${iface.name} {\n`;
+      
+      for (const prop of iface.properties) {
+        if (prop.comments?.length) {
+          code += `  ${this.formatComments(prop.comments, true)}`;
+        }
+        
+        if (prop.isIndexSignature) {
+          code += `  ${prop.name}: ${prop.type}`;
+        } else {
+          const optional = prop.optional ? '?' : '';
+          code += `  ${prop.name}${optional}: ${prop.type}`;
+        }
+        
+        if (this.options.includeSemicolons) {
+          code += ';';
+        }
+        code += '\n';
+      }
+      
+      code += '}';
+      parts.push(code);
+    }
+    
+    // Generate type aliases
+    for (const [name, typeAlias] of this.types) {
+      let code = '';
+      
+      // Add comments if present
+      if (typeAlias.comments?.length) {
+        code += this.formatComments(typeAlias.comments);
+      } else if (typeAlias.description) {
+        code += `/**\n * ${typeAlias.description}\n */\n`;
+      }
+      
+      code += `type ${name} = ${typeAlias.type};`;
+      parts.push(code);
+    }
+    
+    return parts.join('\n\n');
+  }
 
+  private formatComments(comments: any[], inline = false): string {
+    if (!comments?.length) return '';
+    
+    const prefix = inline ? '  ' : '';
+    const lines = comments.map((c: any) => {
+      let value = c.value || '';
+      // Clean up comment markers
+      value = value.replace(/^--\s*/, '').replace(/^\[\[/, '').replace(/\]\]$/, '').trim();
+      return value;
+    });
+    
+    return `${prefix}/**\n${lines.map(l => `${prefix} * ${l}`).join('\n')}\n${prefix} */\n`;
+  }
 
+  // Legacy method for backward compatibility
+  public generate(ast: any): string {
+    this.interfaces.clear();
+    this.types.clear();
+    this.processAST(ast);
+    return this.generateCode();
+  }
 
+  // Plugin system support methods
+  public getAllInterfaces(): any[] {
+    return Array.from(this.interfaces.values());
+  }
 
-
-
-
-
-
-
-
-
-
-}  }    return this.generateCode();    this.processNode(ast);    this.functions.clear();    this.types.clear();    this.interfaces.clear();    }      ast = codeOrAst;    } else {      }        ast = { type: 'Program', body: [] };        console.error('Error parsing code:', error);    return this.generate(ast);
+  public addInterface(iface: any): void {
+    this.interfaces.set(iface.name, iface);
   }
 }

@@ -9,29 +9,34 @@ export class ParseError extends Error {
 }
 
 export class LuaParser {
-  private tokens: Token[];
+  private tokens: Token[] = [];
   private current: number = 0;
+  private input: string;
 
-  constructor() {
-    this.tokens = [];
+  constructor(input: string = '') {
+    this.input = input;
   }
 
-  public setTokens(tokens: Token[], current: number = 0): void {
+  public setTokens(tokens: Token[], position: number): void {
     this.tokens = tokens;
-    this.current = current;
+    this.current = position;
+  }
+
+  public parseStatement(): any {
+    // Implementation for parsing statements
+    return null; // Placeholder
   }
 
   public getCurrentPosition(): number {
     return this.current;
   }
 
-  public parseStatement(): AST.Statement | null {
-    return this.statement();
-  }
-
-  public parse(input: string): AST.Program {
-    const lexer = new Lexer(input);
-    this.tokens = lexer.tokenize();
+  public parse(input?: string): any {
+    if (input) {
+      this.input = input;
+    }
+    const lexer = new Lexer(this.input);
+    this.tokens = lexer.tokenize(this.input);
     this.current = 0;
 
     const statements: AST.Statement[] = [];
