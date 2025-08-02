@@ -10,6 +10,9 @@ nav_order: 5
 LuaTS provides a plugin system that allows you to customize and extend the type generation process.
 {: .fs-6 .fw-300 }
 
+> **Tip:**  
+> For generating Markdown documentation, see the [Markdown Generator](./api-reference.md#markdowngenerator).
+
 ## Table of contents
 {: .no_toc .text-delta }
 
@@ -198,6 +201,14 @@ Then run the CLI with the config file:
 ```bash
 npx luats dir src/lua -o src/types --config luats.config.json
 ```
+
+## Extending Plugins
+
+Plugins can also be used to:
+- Add custom JSDoc comments or annotations
+- Transform or filter generated interfaces/types
+- Integrate with documentation tools (e.g., MarkdownGenerator)
+- Enforce project-specific conventions
 
 ## Plugin Examples
 

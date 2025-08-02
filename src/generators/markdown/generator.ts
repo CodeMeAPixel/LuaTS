@@ -1,3 +1,14 @@
+/**
+ * MarkdownGenerator
+ * 
+ * Generates Markdown documentation from a parsed API/type definition object.
+ * 
+ * Usage:
+ *   import { MarkdownGenerator } from './generators/markdown/generator';
+ *   const md = new MarkdownGenerator({ title: "API" }).generate(apiObject);
+ * 
+ * See docs/api-reference.md for more details.
+ */
 export interface MarkdownGenOptions {
   title?: string;
   description?: string;

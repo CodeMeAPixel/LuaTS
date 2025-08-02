@@ -11,6 +11,13 @@ This directory contains the comprehensive test suite for the Luats library. The 
 - **plugins.test.ts**: Plugin system tests
 - **snapshots.test.ts**: Snapshot testing for type generation
 
+## Test Status
+
+<!-- TEST_RESULTS_START -->
+- ✅ **Passing:** Most core and feature tests
+- ❌ **Failing:** See [FAILING_TESTS.md](../FAILING_TESTS.md) for details on failing and incomplete tests.
+<!-- TEST_RESULTS_END -->
+
 ## Test Coverage
 
 The test suite aims to provide comprehensive coverage of the Luats codebase. You can run the tests with coverage reports using:
@@ -19,12 +26,31 @@ The test suite aims to provide comprehensive coverage of the Luats codebase. You
 bun test --coverage
 ```
 
+After running tests, coverage is reported in `test/lcov.info`.  
+You can use [coverage tools](https://github.com/bcoe/nyc) to visualize this file.
+
+## Failing and Passing Tests
+
+See [FAILING_TESTS.md](../FAILING_TESTS.md) for a checklist of failing and passing tests, including known issues and incomplete features.
+
 ## Fixtures and Snapshots
 
 The test suite includes fixture-based testing:
 
 - `fixtures/`: Contains Lua/Luau test files
 - `snapshots/`: Contains expected TypeScript output for fixture tests
+
+## Additional Functionality
+
+### Markdown Generator
+
+Luats includes a Markdown generator for API documentation.  
+See [`src/generators/markdown/generator.ts`](../src/generators/markdown/generator.ts) and [API Reference: Markdown Generator](../docs/api-reference.md).
+
+### Plugin System
+
+Luats supports a plugin system for customizing type generation and transformation.  
+See [`src/plugins/`](../src/plugins/) and [Plugin System Documentation](../docs/plugins.md) for details and usage examples.
 
 ## Running Tests
 
@@ -62,6 +88,3 @@ Use the debug scripts in this directory for troubleshooting:
 - `debug/test-hanging.ts`: Tests for parser edge cases
 - `debug/test-multiple.ts`: Tests for multiple type definitions
 - `debug/test-demo-structure.ts`: Tests for the demo code structure
-
-<!-- TEST_RESULTS_START -->
-<!-- TEST_RESULTS_END -->

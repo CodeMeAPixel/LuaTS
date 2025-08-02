@@ -20,6 +20,8 @@ LuaTS provides a comprehensive API for parsing, formatting, and type generation.
 - **LuauParser**: Parse Luau code with support for type annotations and modern syntax features.
 - **LuaFormatter**: Format Lua/Luau code with customizable styling options.
 - **TypeGenerator**: Generate TypeScript interfaces from Luau type definitions.
+- **MarkdownGenerator**: Generate Markdown documentation from API/type definitions.  
+  See [`src/generators/markdown/generator.ts`](../src/generators/markdown/generator.ts).
 - **Lexer**: Tokenize Lua/Luau code.
 
 ## Convenience Functions
@@ -32,13 +34,12 @@ LuaTS provides a comprehensive API for parsing, formatting, and type generation.
 - **generateTypesWithPlugins(code, options?, plugins?)**: Generate TypeScript interfaces with plugin support.
 - **analyze(code, isLuau?)**: Analyze code and return detailed information.
 
-## Plugin System
+## Additional Components
 
-LuaTS includes a plugin system for customizing the type generation process:
-
-- **Plugin Interface**: Define custom transformations for types and interfaces.
-- **loadPlugins(pluginPaths)**: Load plugins from file paths.
-- **applyPlugins(generator, plugins, options)**: Apply plugins to a TypeGenerator instance.
+- **MarkdownGenerator**: Generate Markdown documentation from parsed API/type definitions.  
+  See [`src/generators/markdown/generator.ts`](../src/generators/markdown/generator.ts).
+- **Plugin System**: Extend and customize type generation.  
+  See [Plugin System Documentation](../plugins.md) for full details and examples.
 
 ## Type Definitions
 
@@ -49,5 +50,4 @@ LuaTS exports various TypeScript interfaces and types to help you work with the 
 - **FormatterOptions**: Options for formatting code.
 - **TypeGeneratorOptions**: Options for generating TypeScript code.
 - **Plugin**: Interface for creating plugins.
-
 For detailed information on each component, see the individual API pages in this section.

@@ -206,13 +206,13 @@ const tsCode = generateTypes(`
 console.log(tsCode);
 ```
 
-## Plugin Support
+## Related Tools
 
-The TypeGenerator supports plugins for custom transformations:
+- **MarkdownGenerator**: For generating Markdown API docs from type/interface definitions.  
+  See [`src/generators/markdown/generator.ts`](../../src/generators/markdown/generator.ts) and [API Reference](../api-reference.md).
+- **Plugin System**: See [Plugin System Documentation](../../plugins.md) for advanced customization.
 
-```typescript
-import { generateTypesWithPlugins } from 'luats';
-
+See the [Plugin System](../plugins) documentation for more details.
 const tsCodeWithPlugins = await generateTypesWithPlugins(
   luauCode,
   { useUnknown: true },
