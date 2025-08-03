@@ -62,4 +62,4 @@ console.log(tsCode);
 
 ## License
 
-LuaTS is distributed under the [MIT license](https://github.com/codemeapixel/luats/blob/main/LICENSE).
+LuaTS is distributed under the [MIT license](https://github.com/codemeapixel/luats/blob/master/LICENSE).

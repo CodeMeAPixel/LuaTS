@@ -36,7 +36,7 @@ back_to_top: true
 back_to_top_text: "Back to top"
 
 # Footer content
-footer_content: "Copyright &copy; 2024-2025 CodeMeAPixel. Distributed under an <a href=\"https://github.com/codemeapixel/luats/blob/main/LICENSE\">MIT license.</a>"
+footer_content: "Copyright &copy; 2024-2025 CodeMeAPixel. Distributed under an <a href=\"https://github.com/codemeapixel/luats/blob/master/LICENSE\">MIT license.</a>"
 
 # Set a path/url to a logo that will be displayed instead of the title
 logo: "/assets/logo.png"
