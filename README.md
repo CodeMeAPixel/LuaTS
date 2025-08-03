@@ -31,9 +31,6 @@
 
 LuaTS bridges the gap between Lua/Luau and TypeScript ecosystems, allowing developers to leverage type safety while working with Lua codebases. Whether you're developing Roblox games, working with embedded Lua, or maintaining legacy Lua code, LuaTS helps you generate accurate TypeScript definitions for better IDE support, type checking, and developer experience.
 
-> [!CAUTION]
-> This lib is still a work in progress, as such you WILL NOT find it on NPM yet!
-
 ## ✨ Features
 
 ### 🔁 **Core Parsing & Generation**
