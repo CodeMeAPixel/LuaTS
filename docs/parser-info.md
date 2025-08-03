@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Parsers
+title: Parser Information
 parent: API Reference
 nav_order: 3
 ---
