@@ -25,6 +25,8 @@
   <a href="https://github.com/codemeapixel/luats/issues/new?labels=enhancement&template=feature_request.md">Request Feature</a>
   ·
   <a href="https://github.com/codemeapixel/luats/security/policy">Security</a>
+  ·
+  <a href="https://luats.lol/contributing">Contributing</a>
 </p>
 
 ## 🌟 What is LuaTS?
