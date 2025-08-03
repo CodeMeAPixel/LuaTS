@@ -1,0 +1,23 @@
+# Jekyll site files
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+Gemfile.lock
+.bundle/
+vendor/
+
+# Node/npm
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

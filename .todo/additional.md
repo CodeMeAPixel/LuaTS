@@ -1,0 +1,25 @@
+## Additional Ideas & Improvements
+
+- [ ] **Publish TypeScript declaration files (`.d.ts`) for all public APIs**
+- [ ] **Add ESM and CJS dual support with proper `"exports"` field**
+- [ ] **Provide a VSCode extension for Lua/Luau → TypeScript conversion**
+- [ ] **Add support for custom output templates (e.g., for JSDoc, TSDoc, etc.)**
+- [ ] **Enable incremental builds for large codebases**
+- [ ] **Support for Lua 5.4 and future Luau features**
+- [ ] **Add a web playground (REPL) for live conversion and preview**
+- [ ] **Add a `luats init` command to scaffold config and example files**
+- [ ] **Support for YAML config files in addition to JSON**
+- [ ] **Add CLI auto-completion scripts for bash/zsh/fish**
+- [ ] **Improve error messages with code frames and suggestions**
+- [ ] **Add a `luats watch` mode for live conversion in dev workflows**
+- [ ] **Provide migration guides for legacy Lua codebases**
+- [ ] **Add benchmarking and performance tests**
+- [ ] **Support for sourcemaps or code mapping back to Lua**
+- [ ] **Add a logo/banner to npm and GitHub README**
+- [ ] **Add badges for test coverage, bundle size, etc.**
+- [ ] **Publish example projects and templates**
+- [ ] **Add a `luats doctor` command for troubleshooting environment/config issues**
+- [ ] **Support for monorepo setups and workspace-aware config**
+- [ ] **Add support for extern types/classes (typically ending in a .d.lua file)**
+- [ ] **Add ability to reverse logic (ie: transform typescript into lua)**
+- [ ] **Add support for generating types for lua/luau `local function`**

@@ -1,0 +1,219 @@
+// Luau blue colors
+$luau-blue-000: #f0f7ff;
+$luau-blue-100: #dbebff;
+$luau-blue-200: #b5d8ff;
+$luau-blue-300: #8ec3ff;
+$luau-blue-400: #65adff;
+$luau-blue-500: #3490ff; // Main Luau blue
+$luau-blue-600: #1a7aff;
+$luau-blue-700: #0064e6;
+$luau-blue-800: #0052cc;
+$luau-blue-900: #004099;
+
+// Orange accent colors for contrast
+$orange-300: #ffbd5e;
+$orange-500: #fd9614;
+$orange-700: #e07c00;
+
+// Gray neutrals
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+
+// Assign colors to theme variables
+$blue-000: $luau-blue-000;
+$blue-100: $luau-blue-100;
+$blue-200: $luau-blue-200;
+$blue-300: $luau-blue-300;
+
+$link-color: $luau-blue-700;
+$btn-primary-color: $luau-blue-600;
+$base-button-color: $luau-blue-100;
+
+$border-color: $luau-blue-200;
+$table-background-color: $luau-blue-000;
+$code-background-color: $luau-blue-000;
+$search-background-color: $luau-blue-000;
+
+// Navigation colors
+$nav-child-link-color: $luau-blue-600;
+$search-result-preview-color: $luau-blue-500;
+
+// Custom properties for Luau theme
+:root {
+    --luau-primary: #{$luau-blue-600};
+    --luau-secondary: #{$luau-blue-300};
+    --luau-accent: #{$orange-500};
+    --luau-accent-light: #{$orange-300};
+    --luau-accent-dark: #{$orange-700};
+    --luau-text: #{$gray-800};
+    --luau-text-light: #{$gray-700};
+    --luau-bg: #{$gray-100};
+    --luau-bg-card: #ffffff;
+    --luau-border: #{$luau-blue-200};
+    --luau-heading: #{$luau-blue-800};
+    --luau-code-bg: #{rgba($luau-blue-100, 0.5)};
+    --luau-inline-code-bg: #{rgba($luau-blue-200, 0.3)};
+    
+    // Code syntax highlighting colors
+    --code-keyword: #{$luau-blue-700};
+    --code-function: #{$orange-700};
+    --code-string: #2e7d32;
+    --code-number: #e65100;
+    --code-comment: #757575;
+    --code-punctuation: #{$gray-700};
+    
+    // Additional UI component colors
+    --luau-sidebar-bg: #{$gray-100};
+    --luau-sidebar-active: #{rgba($luau-blue-200, 0.5)};
+    --luau-sidebar-border: #{$luau-blue-100};
+    --luau-search-bg: #{rgba($luau-blue-100, 0.3)};
+    --luau-search-result-bg: #{white};
+    --luau-nav-link: #{$luau-blue-700};
+    --luau-nav-link-active: #{$luau-blue-800};
+}
+
+// Dark mode overrides
+[data-theme='dark'] {
+    --luau-primary: #{$luau-blue-300};
+    --luau-secondary: #{$luau-blue-700};
+    --luau-accent: #{$orange-300};
+    --luau-accent-light: #{$orange-500};
+    --luau-accent-dark: #{$orange-700};
+    --luau-text: #{$gray-200};
+    --luau-text-light: #{$gray-300};
+    --luau-bg: #{$gray-900};
+    --luau-bg-card: #{$gray-800};
+    --luau-border: rgba(255, 255, 255, 0.1);
+    --luau-heading: #{$luau-blue-200};
+    --luau-code-bg: #{rgba(0, 0, 0, 0.3)};
+    --luau-inline-code-bg: #{rgba(0, 0, 0, 0.2)};
+    
+    // Code syntax highlighting for dark mode
+    --code-keyword: #{$luau-blue-300};
+    --code-function: #{$orange-300};
+    --code-string: #81c784;
+    --code-number: #ffb74d;
+    --code-comment: #bdbdbd;
+    --code-punctuation: #{$gray-300};
+
+    // Additional UI component colors for dark mode
+    --luau-sidebar-bg: #{$gray-800};
+    --luau-sidebar-active: #{rgba($luau-blue-800, 0.3)};
+    --luau-sidebar-border: #{$gray-700};
+    --luau-search-bg: #{rgba($gray-800, 0.6)};
+    --luau-search-result-bg: #{$gray-800};
+    --luau-nav-link: #{$luau-blue-300};
+    --luau-nav-link-active: #{$luau-blue-200};
+
+    background-color: var(--luau-bg) !important;
+    color: var(--luau-text) !important;
+    
+    // Dark mode code blocks
+    code {
+        background-color: var(--luau-inline-code-bg) !important;
+    }
+    
+    pre.highlight, div.highlighter-rouge {
+        background-color: var(--luau-code-bg) !important;
+        border: 1px solid var(--luau-border);
+    }
+    
+    // Improve heading contrast in dark mode
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--luau-heading) !important;
+    }
+    
+    // Dark mode sidebar
+    .side-bar {
+        background-color: var(--luau-sidebar-bg) !important;
+        border-right: 1px solid var(--luau-sidebar-border) !important;
+    }
+    
+    .search {
+        background-color: var(--luau-bg) !important;
+    }
+    
+    .search-input {
+        background-color: var(--luau-search-bg) !important;
+        color: var(--luau-text) !important;
+    }
+    
+    .search-results {
+        background-color: var(--luau-search-result-bg) !important;
+    }
+    
+    .nav-list .nav-list-item .nav-list-link {
+        color: var(--luau-text) !important;
+    }
+    
+    .nav-list .nav-list-item .nav-list-link:hover,
+    .nav-list .nav-list-item .nav-list-link.active {
+        background-color: var(--luau-sidebar-active) !important;
+        color: var(--luau-nav-link-active) !important;
+    }
+}
+
+// Light mode improvements
+body:not([data-theme='dark']) {
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--luau-heading);
+    }
+    
+    code {
+        background-color: var(--luau-inline-code-bg);
+    }
+    
+    pre.highlight, div.highlighter-rouge {
+        background-color: var(--luau-code-bg);
+        border: 1px solid var(--luau-border);
+    }
+    
+    // Light mode sidebar
+    .side-bar {
+        background-color: var(--luau-sidebar-bg);
+        border-right: 1px solid var(--luau-sidebar-border);
+    }
+    
+    .search {
+        background-color: var(--luau-bg);
+    }
+    
+    .search-input {
+        background-color: var(--luau-search-bg);
+        color: var(--luau-text);
+    }
+    
+    .search-results {
+        background-color: var(--luau-search-result-bg);
+    }
+    
+    .nav-list .nav-list-item .nav-list-link {
+        color: var(--luau-text);
+    }
+    
+    .nav-list .nav-list-item .nav-list-link:hover,
+    .nav-list .nav-list-item .nav-list-link.active {
+        background-color: var(--luau-sidebar-active);
+        color: var(--luau-nav-link-active);
+    }
+}
+
+// Code syntax highlighting
+.highlight {
+    .k, .kd, .kn, .kp, .kr, .kt { color: var(--code-keyword); }  // keywords
+    .nc, .nf, .nn { color: var(--code-function); }               // functions, classes
+    .s, .s1, .s2, .sr, .se { color: var(--code-string); }        // strings
+    .mi, .mf, .mh, .mo { color: var(--code-number); }            // numbers
+    .c, .c1, .cm, .cp { color: var(--code-comment); }            // comments
+    .p, .o { color: var(--code-punctuation); }                   // punctuation
+}
+
+// Focus styles for accessibility
+a:focus, button:focus, [tabindex="0"]:focus {
+    outline: 2px solid var(--luau-primary);
+    outline-offset: 2px;
+}

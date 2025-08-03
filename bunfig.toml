@@ -1,0 +1,15 @@
+# Bun configuration file
+
+[install]
+# Package installation configuration
+registry = "https://registry.npmjs.org/"
+production = false
+
+[dev]
+# Development server configuration
+port = 3000
+hot = true
+
+[build]
+# Build configuration
+minify = true
