@@ -5,7 +5,7 @@ parent: API Reference
 nav_order: 3
 ---
 
-# Parsers
+# Parser Information
 
 This guide provides comprehensive information about the LuaTS parsers and their usage.
 
