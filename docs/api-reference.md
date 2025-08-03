@@ -17,16 +17,16 @@ LuaTS provides a comprehensive API for parsing, formatting, and type generation.
 ## Core Components
 
 ### Parsers
-- **[LuaParser](./parsers)**: Parse standard Lua code into Abstract Syntax Trees
-- **[LuauParser](./parsers)**: Parse Luau code with type annotations and modern syntax
+- **[LuaParser](./api-reference/parsers)**: Parse standard Lua code into Abstract Syntax Trees
+- **[LuauParser](./api-reference/parsers)**: Parse Luau code with type annotations and modern syntax
 
 ### Clients  
-- **[LuaFormatter](./formatter)**: Format Lua/Luau code with customizable styling
-- **[Lexer](./lexer)**: Tokenize Lua/Luau code with component-based architecture
+- **[LuaFormatter](./api-reference/formatter)**: Format Lua/Luau code with customizable styling
+- **[Lexer](./api-reference/lexer)**: Tokenize Lua/Luau code with component-based architecture
 
 ### Generators
-- **[TypeGenerator](./type-generator)**: Convert Luau types to TypeScript interfaces
-- **[MarkdownGenerator](./markdown-generator)**: Generate documentation from API definitions
+- **[TypeGenerator](./api-reference/type-generator)**: Convert Luau types to TypeScript interfaces
+- **[MarkdownGenerator](./api-reference/markdown-generator)**: Generate documentation from API definitions
 
 ### Plugin System
 - **[Plugin Interface](../plugins)**: Extend and customize type generation
