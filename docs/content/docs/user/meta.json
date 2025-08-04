@@ -1,0 +1,12 @@
+{
+  "title": "User Guide",
+  "description": "Basic knowledge for using LuaTS",
+  "icon": "User",
+  "root": true,
+  "pages": [
+    "testing",
+    "contribution",
+    "examples",
+    "type-system"
+  ]
+}

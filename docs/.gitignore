@@ -1,23 +1,33 @@
-# Jekyll site files
-_site/
-.sass-cache/
-.jekyll-cache/
-.jekyll-metadata
-Gemfile.lock
-.bundle/
-vendor/
+# deps
+/node_modules
 
-# Node/npm
-node_modules/
-npm-debug.log
-yarn-error.log
+# generated content
+.contentlayer
+.content-collections
+.source
+auto_apiref/output
 
-# Editor/IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# test & build
+/coverage
+/.next/
+/out/
+/build
+*.tsbuildinfo
 
-# OS files
+# misc
 .DS_Store
-Thumbs.db
+*.pem
+/.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# others
+.env*.local
+.env
+.vercel
+next-env.d.ts
+
+# 
+fumadocs-basehub

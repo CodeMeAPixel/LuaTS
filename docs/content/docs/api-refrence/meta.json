@@ -1,0 +1,15 @@
+{
+  "title": "API-Refrence",
+  "description": "API level knowledge for using LuaTS",
+  "icon": "TbApi",
+  "root": true,
+  "pages": [
+    "api-usage",
+    "ast-type",
+    "formatter",
+    "lexer",
+    "markdown-generator",
+    "prasers",
+    "type-generator"
+  ]
+}

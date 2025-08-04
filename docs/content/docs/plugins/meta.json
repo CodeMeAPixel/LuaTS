@@ -1,0 +1,6 @@
+{
+  "icon": "BsPlugin",
+  "title": "Plugins",
+  "root": true,
+  "pages": ["advanced"]
+}

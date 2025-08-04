@@ -1,0 +1,184 @@
+---
+title: LuaTS - TypeScript Library for Lua/Luau
+description: A powerful TypeScript library for parsing, formatting, and providing type interfaces for Lua and Luau code.
+icon: FaHome
+---
+
+<Callout type="info">
+  LuaTS bridges the gap between Lua/Luau and TypeScript, enabling seamless type conversion and powerful tooling for modern development workflows.
+</Callout>
+
+## Overview
+
+LuaTS is a comprehensive library designed for developers working with Lua/Luau code in TypeScript environments. It provides robust parsing, formatting, and type conversion capabilities that make cross-language development smooth and efficient.
+
+<Cards>
+  <Card
+    title="🔁 Type Conversion"
+    description="Convert Lua/Luau type declarations into TypeScript interfaces with full fidelity"
+    href="/docs/type-conversion"
+  />
+  <Card
+    title="🧠 Smart Mapping"
+    description="Intelligent mapping of Lua types to TypeScript equivalents with proper handling of primitives"
+    href="/docs/type-mapping"
+  />
+  <Card
+    title="🔧 Table Support"
+    description="Advanced handling of table types, converting them to arrays or records as appropriate"
+    href="/docs/table-types"
+  />
+  <Card
+    title="📁 Batch Processing"
+    description="Process single files or entire directories with powerful batch conversion tools"
+    href="/docs/batch-processing"
+  />
+</Cards>
+
+## Key Features
+
+### Core Functionality
+
+- **🔁 Type Declaration Conversion**: Seamlessly converts Lua/Luau type declarations into TypeScript interfaces
+- **🧠 Intelligent Type Mapping**: Maps Lua primitive types (`string`, `number`, `boolean`) to TypeScript equivalents
+- **❓ Optional Type Support**: Handles optional types (`foo: string?` → `foo?: string`) with proper nullability
+- **🔧 Advanced Table Handling**: Converts table types (`{string}` → `string[]` or `Record<K, V>`)
+- **➡️ Function Type Conversion**: Transforms Luau function types to TypeScript arrow functions
+- **📄 Comment Preservation**: Maintains comments and converts them to JSDoc format
+
+### Developer Experience
+
+- **📁 Flexible Processing**: Single-file or batch directory conversion support
+- **🛠 Comprehensive CLI**: Feature-rich command-line interface with extensive options
+- **🧪 Syntax Validation**: Built-in syntax validation with detailed error reporting
+- **🔌 Plugin System**: Extensible architecture with custom transform hooks
+- **🔄 Type Merging**: Intelligent handling of overlapping types and shared structures
+- **📦 Programmatic API**: Full-featured API for programmatic usage
+
+## Quick Start
+
+<Steps>
+  <Step>
+    ### Installation
+    
+    Install LuaTS using your preferred package manager:
+    
+    ```bash
+    npm install luats
+    # or
+    yarn add luats
+    # or
+    bun add luats
+    ```
+  </Step>
+  
+  <Step>
+    ### Basic Usage
+    
+    Import and use LuaTS in your TypeScript project:
+    
+    ```typescript
+    import { generateTypes } from 'luats';
+    
+    const luaCode = `
+      type Vector3 = {
+        x: number,
+        y: number,
+        z: number
+      }
+      
+      type Player = {
+        name: string,
+        position: Vector3,
+        health: number?
+      }
+    `;
+    
+    const tsCode = generateTypes(luaCode);
+    console.log(tsCode);
+    ```
+    
+    <Callout type="tip">
+      The generated TypeScript code maintains full type safety while preserving the original structure and semantics.
+    </Callout>
+  </Step>
+  
+  <Step>
+    ### CLI Usage
+    
+    Use the command-line interface for quick conversions:
+    
+    ```bash
+    # Convert a single file
+    luats convert input.lua --output output.d.ts
+    
+    # Process an entire directory
+    luats convert src/ --output types/ --recursive
+    
+    # Use with configuration file
+    luats convert --config luats.config.json
+    ```
+  </Step>
+</Steps>
+
+
+## Performance & Benchmarks
+
+<Callout type="info">
+  LuaTS is optimized for performance with efficient parsing algorithms and minimal memory footprint.
+</Callout>
+
+<Cards>
+  <Card
+    title="⚡ Fast Parsing"
+    description="Processes 10,000+ lines of Lua code in under 100ms"
+  />
+  <Card
+    title="💾 Memory Efficient"
+    description="Low memory usage with streaming parser for large files"
+  />
+  <Card
+    title="🔄 Incremental Updates"
+    description="Smart caching system for faster subsequent builds"
+  />
+</Cards>
+
+LuaTS is used by developers across various domains:
+
+- **Game Development**: Converting Roblox/Luau game scripts to TypeScript
+- **Embedded Systems**: Type-safe interfaces for Lua-based embedded applications  
+- **DevOps**: Configuration management with type safety
+- **Web Development**: Lua template engines with TypeScript integration
+
+The complete API provides programmatic access to all LuaTS functionality:
+
+## Community & Support
+
+<Cards>
+  <Card
+    title="📚 Documentation"
+    description="Comprehensive guides and API reference"
+    href="/docs"
+  />
+  <Card
+    title="🐛 Issues"
+    description="Report bugs and request features on GitHub"
+    href="https://github.com/codemeapixel/luats/issues"
+  />
+  <Card
+    title="💬 Discussions"
+    description="Join the community discussions"
+    href="https://github.com/codemeapixel/luats/discussions"
+  />
+</Cards>
+
+## License
+
+<Callout>
+  LuaTS is distributed under the [MIT License](https://github.com/codemeapixel/luats/blob/master/LICENSE). 
+  Feel free to use it in your projects, both commercial and open source.
+</Callout>
+
+---
+
+Ready to get started? [Install LuaTS](/docs/installation) today and transform your Lua/Luau development workflow!
