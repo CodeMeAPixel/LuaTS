@@ -16,7 +16,7 @@ import { SiGithub } from "react-icons/si";
 export const linkItems: LinkItemType[] = [
   {
     type: "icon",
-    url: "https://antiraid.xyz/discord",
+    url: "https://discord.gg/3z65bpPWhC",
     text: "Support",
     icon: <FaDiscord />,
     external: true,
@@ -55,22 +55,22 @@ export const baseOptions: BaseLayoutProps = {
         {
           icon: <FaCogs />,
           text: "User Guide",
-          description: "How to guide on setting up AntiRaid",
+          description: "How to guide on setting up LuaTS",
           url: "/docs/user",
         },
         {
           icon: <FaBook />,
-          text: "Developer's Guide",
+          text: "API Refrence",
           description:
-            "Everything you need to know about AntiRaid's infrastructure.",
-          url: "/docs/dev",
+            "API level knowledge for using LuaTS",
+          url: "/docs/api-refrence",
         },
         {
           icon: <FaDownload />,
-          text: "Setup Guide",
+          text: "Plugins",
           description:
-            "Everything you need to know on how to setup AntiRaid on your local server.",
-          url: "/docs/dev/hosting",
+            "LuaTS provides a comprehensive plugin system that allows you to customize and extend the type generation process.",
+          url: "/docs/plugins",
         },
       ],
     },

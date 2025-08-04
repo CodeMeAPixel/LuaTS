@@ -31,8 +31,6 @@ export const metadata: Metadata = {
       alt: "LuaTS - A TypeScript library for parsing, formatting, and providing type interfaces for Lua and Luau code.",
     },
   },
-  description:
-    "AntiRaid offers powerful, automated protection for your Discord server. Designed to combat spam, harmful bots, and disruptive behavior, our advanced moderation technology ensures a safe and welcoming environment. With AntiRaid, you can focus on engaging with your community while we handle the security, providing real-time defense against potential threats...",
 };
 
 export const viewport: Viewport = {

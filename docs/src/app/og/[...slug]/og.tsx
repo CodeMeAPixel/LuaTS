@@ -2,7 +2,7 @@ import type { ImageResponseOptions } from "next/dist/compiled/@vercel/og/types";
 import { ImageResponse } from "next/og";
 import type { ReactElement, ReactNode } from "react";
 
-const title = "AntiRaid";
+const title = "LuaTS";
 
 interface GenerateProps {
   title: ReactNode;
@@ -67,8 +67,8 @@ export function generate({
           }}
         >
           <img
-            src="https://avatars.githubusercontent.com/u/83183936?s=200&v=4"
-            alt="AntiRaid Logo"
+            src="https://raw.githubusercontent.com/CodeMeAPixel/LuaTS/ccebab352538f86cf5347bc81bbd1e0db409cbb3/docs/public/logo.svg"
+            alt="LuaTS Logo"
             width={58}
             height={58}
             style={{
