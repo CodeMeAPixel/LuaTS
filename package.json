@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "description": "A comprehensive TypeScript library for parsing, formatting, analyzing, and transforming Lua and Luau code with robust type interfaces and AST manipulation",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
     "./parsers/lua": {
